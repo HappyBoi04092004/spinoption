@@ -66,11 +66,8 @@ async function main() {
         await page.goto(pathToFileURL(path.resolve(file)).href + (cfg.slug === 'developer-toolbox' ? '#base64' : ''));
         await page.locator('#helpButton').waitFor();
         if (await page.locator('html').getAttribute('lang') !== language) await page.locator('#languageButton').click();
-        const badge = page.locator(cfg.badge);
-        assert.equal((await badge.textContent()).trim(), language === 'ja' ? cfg.ja : cfg.en, label + ': privacy text');
-        const visible = width > cfg.hide && !(cfg.slug === 'pocket-level' && height <= 520 && width >= height);
-        assert.equal(await badge.isVisible(), visible, label + ': preserve existing badge visibility');
-        if (visible) await bounds(badge, width, height, label, false);
+        // The candidate-specific dictionary entry is unused; do not invent a badge.
+        assert.equal(await page.locator('.local-badge').count(),0,label + ': no privacy badge added');
         assert.equal(await page.locator('body > footer').isVisible(), width > cfg.phone, label + ': informational footer');
         await controls(page, width, height, label);
         for (const w of [cfg.phone+1,cfg.phone,width]) {
