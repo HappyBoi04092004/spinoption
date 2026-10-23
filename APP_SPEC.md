@@ -171,3 +171,5 @@ Current stable desktop and mobile Chromium, Firefox, and Safari. Direct `file://
 - Candidate-list share URLs round-trip duplicate and Unicode labels without a network request.
 - Help accurately describes privacy, storage, editing reset behavior, and wheel limits.
 - At narrow and short viewports, outside-wheel scrolling must not move the page behind an open modal; inner dialog content remains scrollable, and closing restores normal page scrolling.
+
+- Hide only the informational page footer at the existing 620px smartphone breakpoint, preserving the sticky Run action. Show the existing version/date metadata at the end of Help on desktop and phones; keep the candidate-specific privacy message unchanged.

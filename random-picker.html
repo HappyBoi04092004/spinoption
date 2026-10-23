@@ -377,7 +377,7 @@
     @keyframes confetti-fall { to { transform: translate3d(var(--dx),105vh,0) rotate(var(--rot)); opacity: .12; } }
     footer { width: min(1180px,100%); margin: 0 auto; padding: 0 clamp(14px,2.8vw,30px) 34px; color: var(--muted); font-size: 11px; }
     .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 18px; }
-    .build-meta { display: flex; flex-wrap: wrap; gap: 12px; }
+    .build-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; color: var(--muted); font-size: 11px; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     [hidden] { display: none !important; }
     @media (max-width: 900px) {
@@ -387,6 +387,7 @@
       .result-stage { min-height: 300px; }
     }
     @media (max-width: 620px) {
+      footer { display: none; }
       :root { --header-height: 58px; }
       .header-inner { padding-block: 8px; }
       .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
@@ -666,7 +667,6 @@
   <footer>
     <div class="footer-inner">
       <span><span id="footerName">Random Picker</span> · <span data-i18n="footer">候補を外部へ送信しない単一HTMLツール</span></span>
-      <span class="build-meta"><span>v<span id="buildVersion">1.0.3</span></span><span id="builtAt">—</span></span>
     </div>
   </footer>
 
@@ -775,6 +775,7 @@
       <p data-i18n="helpSavedLists">保存リストは最大30件。名前で検索・複製・変更でき、直前の変更を元に戻せます。</p>
 
       <p data-i18n="helpShortcut">Ctrl / Cmd + Enter で抽選。ダイアログ内では実行しません。</p>
+      <span class="build-meta"><span>v<span id="buildVersion">1.0.3</span></span><span id="builtAt">—</span></span>
     </div>
     <!-- APP:HELP:END -->
   </dialog>
@@ -796,7 +797,7 @@
       'use strict';
 
       const APP_CONFIG = {"$schema":"./schemas/app-config.schema.json","name":"Random Picker","nameJa":"ランダムピッカー","slug":"htmlapps-random-picker","version":"1.0.3","description":"A random picker for draws, ordering, team making, and wheel spins.","descriptionJa":"抽選・順番決め・チーム分け・ルーレットをすぐ使えるランダムピッカーです。","defaultLanguage":"auto","repository":{"owner":"ttomohisa","name":"htmlapps-random-picker"},"build":{"output":"dist/index.html","blockRuntimeNetwork":true,"selfExtract":{"enabled":true,"output":"dist/index.self-extract.html"},"sizeBudget":{"readableWarningMb":1,"selfExtractWarningMb":1}}};
-      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.0","generatedAtUtc":"2026-10-11T22:25:09.0420002Z","app":{"name":"Random Picker","slug":"htmlapps-random-picker","version":"1.0.3"},"dependencies":[]};
+      const BUILD_MANIFEST = {"schemaVersion":2,"builder":"single-html-app-template/1.0","generatedAtUtc":"2026-10-23T09:57:06.9107235Z","app":{"name":"Random Picker","slug":"htmlapps-random-picker","version":"1.0.3"},"dependencies":[]};
       const assetBundle = {"schemaVersion":2,"dependencies":{}};
       const $ = selector => document.querySelector(selector);
       const $$ = selector => Array.from(document.querySelectorAll(selector));
