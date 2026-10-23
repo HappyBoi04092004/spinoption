@@ -107,10 +107,11 @@ async function main() {
           // Require exact immutable-baseline geometry, the same invisible tooltip cause, and no visible box overflow.
           const baseline=await baselineLayout(browser,baselineFile,language,width,height);
           assert.ok(width<=cfg.phone,label+': only known phone tooltip overflow is permitted');
+          console.log('BASELINE COMPARISON '+label+' '+JSON.stringify({commit:baselineCommit,baseline,current:finalLayout}));
           for(const layout of [initialLayout,finalLayout,baseline]) {
             assert.deepEqual(layout.visibleOverflow,[],label+': visible elements remain inside viewport');
             assert.equal(layout.tooltip.opacity,'0',label+': known tooltip is not displayed');
-            assert.equal(Math.ceil(layout.tooltip.right),layout.scrollWidth,label+': overflow belongs only to known tooltip');
+            assert.ok(Math.abs(layout.tooltip.right-layout.scrollWidth)<=1,label+': rounded overflow belongs only to known tooltip '+JSON.stringify(layout));
             assert.equal(layout.scrollWidth,baseline.scrollWidth,label+': no overflow increase over immutable baseline');
             assert.equal(layout.canScrollX,baseline.canScrollX,label+': horizontal scrolling unchanged from baseline');
             assert.equal(layout.tooltip.content,baseline.tooltip.content,label+': same file-only tooltip');

@@ -23,7 +23,6 @@ jobs:
       uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
       with:
         persist-credentials: false
-        fetch-depth: 2
     - name: Setup Node.js
       uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
       with:
@@ -42,6 +41,8 @@ jobs:
     - name: Verify phone layout in Chromium
       shell: pwsh
       run: |
+        git fetch --no-tags --depth=1 origin aacab5ccb8400cfb68fb8a07ae7f2d0e7d0bc825
+        if ($LASTEXITCODE -ne 0) { throw "Immutable layout baseline unavailable." }
         $testTools = Join-Path $env:RUNNER_TEMP "mobile-layout-tests"
         npm install --prefix $testTools --ignore-scripts --no-audit --no-fund --package-lock=false playwright@1.58.2
         if ($LASTEXITCODE -ne 0) { throw "Playwright installation failed." }
