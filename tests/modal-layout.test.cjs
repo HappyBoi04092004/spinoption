@@ -16,3 +16,20 @@ for (const element of ['html', 'body']) {
       'both scroll axes must stay locked behind the dialog');
   });
 }
+
+
+test('phone informational footer is hidden and build metadata is last in Help', () => {
+  const mobile = css.match(/@media \(max-width: 620px\) \{([\s\S]*?)@media \(prefers-reduced-motion/)[1];
+  assert.match(mobile, /footer\s*\{\s*display:\s*none;?\s*\}/);
+  assert.match(mobile, /\.primary-action\s*\{\s*position:\s*sticky;/);
+  const help = html.match(/<dialog\b[^>]*id="helpDialog"[\s\S]*?<\/dialog>/)[0];
+  assert.match(help, /data-i18n="helpShortcut"[\s\S]*class="build-meta"[\s\S]*id="buildVersion"[\s\S]*id="builtAt"[^>]*>[^<]*<\/span><\/span>\s*<\/div>/);
+  assert.doesNotMatch(html.match(/<footer>[\s\S]*?<\/footer>/)[0], /build-meta|id="builtAt"|id="buildVersion"/);
+  for (const id of ['buildVersion','builtAt']) assert.equal((html.match(new RegExp(`id="${id}"`, 'g')) || []).length, 1);
+});
+
+test('Help body remains scrollable inside the existing bounded dialog', () => {
+  assert.match(css, /#helpDialog\[open\] \{ display: flex; flex-direction: column; \}/);
+  assert.match(css, /#helpDialog \.dialog-header \{ flex: 0 0 auto; \}/);
+  assert.match(css, /#helpDialog \.dialog-body \{ flex: 1 1 auto; min-height: 0; max-height: none; \}/);
+});

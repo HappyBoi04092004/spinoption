@@ -327,6 +327,9 @@
     .dialog-close:hover { background: var(--surface-hover); }
     .dialog-close svg { width: 19px; height: 19px; }
     .dialog-body { padding: 20px 20px 28px; overflow: auto; max-height: calc(100dvh - 102px); }
+    #helpDialog[open] { display: flex; flex-direction: column; }
+    #helpDialog .dialog-header { flex: 0 0 auto; }
+    #helpDialog .dialog-body { flex: 1 1 auto; min-height: 0; max-height: none; }
     .dialog-body h3 { margin: 25px 0 8px; padding-top: 19px; border-top: 1px solid color-mix(in srgb,var(--line) 78%,transparent); font-size: 14px; }
     .dialog-body h3:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
     .dialog-body p, .dialog-body li { color: var(--muted); font-size: 13px; line-height: 1.7; }
@@ -377,7 +380,7 @@
     @keyframes confetti-fall { to { transform: translate3d(var(--dx),105vh,0) rotate(var(--rot)); opacity: .12; } }
     footer { width: min(1180px,100%); margin: 0 auto; padding: 0 clamp(14px,2.8vw,30px) 34px; color: var(--muted); font-size: 11px; }
     .footer-inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 18px; }
-    .build-meta { display: flex; flex-wrap: wrap; gap: 12px; }
+    .build-meta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; color: var(--muted); font-size: 11px; }
     .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     [hidden] { display: none !important; }
     @media (max-width: 900px) {
@@ -387,6 +390,7 @@
       .result-stage { min-height: 300px; }
     }
     @media (max-width: 620px) {
+      footer { display: none; }
       :root { --header-height: 58px; }
       .header-inner { padding-block: 8px; }
       .brand-mark { width: 34px; height: 34px; border-radius: 10px; }
@@ -666,7 +670,6 @@
   <footer>
     <div class="footer-inner">
       <span><span id="footerName">Random Picker</span> · <span data-i18n="footer">候補を外部へ送信しない単一HTMLツール</span></span>
-      <span class="build-meta"><span>v<span id="buildVersion">1.0.3</span></span><span id="builtAt">—</span></span>
     </div>
   </footer>
 
@@ -775,6 +778,7 @@
       <p data-i18n="helpSavedLists">保存リストは最大30件。名前で検索・複製・変更でき、直前の変更を元に戻せます。</p>
 
       <p data-i18n="helpShortcut">Ctrl / Cmd + Enter で抽選。ダイアログ内では実行しません。</p>
+      <span class="build-meta"><span>v<span id="buildVersion">1.0.3</span></span><span id="builtAt">—</span></span>
     </div>
     <!-- APP:HELP:END -->
   </dialog>
