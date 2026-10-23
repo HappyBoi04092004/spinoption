@@ -27,3 +27,9 @@ test('phone informational footer is hidden and build metadata is last in Help', 
   assert.doesNotMatch(html.match(/<footer>[\s\S]*?<\/footer>/)[0], /build-meta|id="builtAt"|id="buildVersion"/);
   for (const id of ['buildVersion','builtAt']) assert.equal((html.match(new RegExp(`id="${id}"`, 'g')) || []).length, 1);
 });
+
+test('Help body remains scrollable inside the existing bounded dialog', () => {
+  assert.match(css, /#helpDialog\[open\] \{ display: flex; flex-direction: column; \}/);
+  assert.match(css, /#helpDialog \.dialog-header \{ flex: 0 0 auto; \}/);
+  assert.match(css, /#helpDialog \.dialog-body \{ flex: 1 1 auto; min-height: 0; max-height: none; \}/);
+});

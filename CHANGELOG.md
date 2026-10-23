@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bound only the Help scrolling body to its existing dialog height so the relocated build metadata stays reachable; this also avoids the pre-existing desktop clipping of long Help content.
+
 - Hide the informational footer on phones and move its existing build version/date to the end of Help without changing the sticky Run action or candidate-specific privacy wording.
 
 - 1.0.3: Lock background page scrolling while any native modal is open, preserving inner dialog scrolling and native close behavior. Added root/body modal-state regression coverage and bilingual Help guidance.
