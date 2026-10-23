@@ -12,7 +12,13 @@ async function bounds(locator, width, height, label, vertical = true) {
   assert.ok(r && r.x >= -1 && r.x + r.width <= width + 1 && (!vertical || (r.y >= -1 && r.y + r.height <= height + 1)), label + ': controls fit viewport');
 }
 async function layoutMetrics(page) {
-  return page.evaluate(() => ({width:innerWidth,scrollWidth:document.documentElement.scrollWidth, offenders:[...document.querySelectorAll('body *')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,class:String(el.className).slice(0,100),left:r.left,right:r.right,width:r.width};}).filter(r => r.right>innerWidth+.5 || r.left<-.5).slice(0,12)}));
+  return page.evaluate(() => {
+    const el=document.querySelector('#shareCandidatesWrap'), r=el.getBoundingClientRect(), p=getComputedStyle(el,'::after');
+    const x=scrollX,y=scrollY;scrollTo({left:100,top:y,behavior:'instant'});const canScrollX=scrollX;scrollTo({left:x,top:y,behavior:'instant'});
+    return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,canScrollX,
+      tooltip:{left:r.left,width:r.width,pseudoLeft:p.left,pseudoWidth:p.width,transform:p.transform,opacity:p.opacity,content:p.content},
+      offenders:[...document.querySelectorAll('body *')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,class:String(el.className).slice(0,100),left:r.left,right:r.right,width:r.width,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};}).filter(r => r.right>innerWidth+.5 || r.left<-.5 || r.scrollWidth>r.clientWidth+1).slice(0,12)};
+  });
 }
 async function controls(page, width, height, label) {
   if (cfg.slug === 'developer-toolbox') {
