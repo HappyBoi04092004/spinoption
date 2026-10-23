@@ -11,6 +11,9 @@ async function bounds(locator, width, height, label, vertical = true) {
   const r = await locator.boundingBox();
   assert.ok(r && r.x >= -1 && r.x + r.width <= width + 1 && (!vertical || (r.y >= -1 && r.y + r.height <= height + 1)), label + ': controls fit viewport');
 }
+async function layoutMetrics(page) {
+  return page.evaluate(() => ({width:innerWidth,scrollWidth:document.documentElement.scrollWidth, offenders:[...document.querySelectorAll('body *')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,class:String(el.className).slice(0,100),left:r.left,right:r.right,width:r.width};}).filter(r => r.right>innerWidth+.5 || r.left<-.5).slice(0,12)}));
+}
 async function controls(page, width, height, label) {
   if (cfg.slug === 'developer-toolbox') {
     assert.equal(await page.locator('#mobileToolsButton').isVisible(), width <= cfg.phone, label + ': tool picker breakpoint');
@@ -69,14 +72,17 @@ async function main() {
         // The candidate-specific dictionary entry is unused; do not invent a badge.
         assert.equal(await page.locator('.local-badge').count(),0,label + ': no privacy badge added');
         assert.equal(await page.locator('body > footer').isVisible(), width > cfg.phone, label + ': informational footer');
+        const initialLayout = await layoutMetrics(page);
         await controls(page, width, height, label);
+        const drawnLayout = await layoutMetrics(page);
         for (const w of [cfg.phone+1,cfg.phone,width]) {
           await page.setViewportSize({width:w,height});
           assert.equal(await page.locator('body > footer').isVisible(), w > cfg.phone, label + ': footer resize');
         }
         await page.evaluate(() => scrollTo(0,0));
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-        assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), label + ': page width');
+        const finalLayout = await layoutMetrics(page);
+        assert.ok(finalLayout.scrollWidth <= finalLayout.width, label + ': page width ' + JSON.stringify({initialLayout,drawnLayout,finalLayout}));
         if (cfg.slug === 'pocket-level' && width <= cfg.phone) await bounds(page.locator('.control-dock'),width,height,label);
         if (file === 'dist/index.html' && [1360,320].includes(width)) await page.screenshot({path:path.join(evidence,`${language}-${width}.png`)});
         await page.locator('#helpButton').click();
