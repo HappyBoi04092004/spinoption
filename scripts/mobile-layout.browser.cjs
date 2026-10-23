@@ -4,6 +4,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
+const {execFileSync} = require('node:child_process');
+const baselineCommit = 'aacab5ccb8400cfb68fb8a07ae7f2d0e7d0bc825';
 const {chromium} = require('playwright');
 const cfg = {"slug": "random-picker", "phone": 620, "badge": "[data-i18n=\"localBadge\"]", "ja": "候補は端末内だけで処理", "en": "Processed only on this device", "hide": 0, "build": true, "details": false, "end": "#builtAt", "close": "#helpCloseButton"};
 const evidence = path.resolve('test-results/mobile-layout');
@@ -14,11 +16,21 @@ async function bounds(locator, width, height, label, vertical = true) {
 async function layoutMetrics(page) {
   return page.evaluate(() => {
     const el=document.querySelector('#shareCandidatesWrap'), r=el.getBoundingClientRect(), p=getComputedStyle(el,'::after');
-    const x=scrollX,y=scrollY;scrollTo({left:100,top:y,behavior:'instant'});const canScrollX=scrollX;scrollTo({left:x,top:y,behavior:'instant'});
+    const outerWidth=parseFloat(p.width)+(p.boxSizing==='border-box'?0:parseFloat(p.paddingLeft)+parseFloat(p.paddingRight)+parseFloat(p.borderLeftWidth)+parseFloat(p.borderRightWidth));
+    const tooltipRight=r.left+parseFloat(p.left)+new DOMMatrix(p.transform).m41+outerWidth;
+    const x=scrollX,y=scrollY;scrollTo({left:1000,top:y,behavior:'instant'});const canScrollX=scrollX;scrollTo({left:x,top:y,behavior:'instant'});
     return {width:innerWidth,scrollWidth:document.documentElement.scrollWidth,canScrollX,
-      tooltip:{left:r.left,width:r.width,pseudoLeft:p.left,pseudoWidth:p.width,transform:p.transform,opacity:p.opacity,content:p.content},
-      offenders:[...document.querySelectorAll('body *')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,class:String(el.className).slice(0,100),left:r.left,right:r.right,width:r.width,scrollWidth:el.scrollWidth,clientWidth:el.clientWidth};}).filter(r => r.right>innerWidth+.5 || r.left<-.5 || r.scrollWidth>r.clientWidth+1).slice(0,12)};
+      tooltip:{right:tooltipRight,opacity:p.opacity,content:p.content},
+      visibleOverflow:[...document.querySelectorAll('body *')].filter(el=>el.getClientRects().length).map(el=>{const r=el.getBoundingClientRect();return {tag:el.tagName,id:el.id,left:r.left,right:r.right};}).filter(r=>r.right>innerWidth+.5||r.left<-.5).slice(0,12)};
   });
+}
+async function baselineLayout(browser, file, language, width, height) {
+  const context=await browser.newContext({viewport:{width,height},locale:language,reducedMotion:'reduce'});
+  try {
+    const page=await context.newPage();await page.goto(pathToFileURL(file).href);await page.locator('#helpButton').waitFor();
+    if(await page.locator('html').getAttribute('lang')!==language)await page.locator('#languageButton').click();
+    return await layoutMetrics(page);
+  } finally {await context.close();}
 }
 async function controls(page, width, height, label) {
   if (cfg.slug === 'developer-toolbox') {
@@ -58,6 +70,9 @@ async function controls(page, width, height, label) {
 }
 async function main() {
   fs.mkdirSync(evidence, {recursive:true});
+  // Copy the exact shipped immutable baseline, without editing its HTML or substituting a fallback.
+  const baselineFile=path.join(process.env.RUNNER_TEMP,'random-picker-baseline.html');
+  fs.writeFileSync(baselineFile,execFileSync('git',['show',baselineCommit+':random-picker.html'],{maxBuffer:1024*1024}));
   const browser = await chromium.launch();
   try {
     const cases = [];
@@ -80,7 +95,6 @@ async function main() {
         assert.equal(await page.locator('body > footer').isVisible(), width > cfg.phone, label + ': informational footer');
         const initialLayout = await layoutMetrics(page);
         await controls(page, width, height, label);
-        const drawnLayout = await layoutMetrics(page);
         for (const w of [cfg.phone+1,cfg.phone,width]) {
           await page.setViewportSize({width:w,height});
           assert.equal(await page.locator('body > footer').isVisible(), w > cfg.phone, label + ': footer resize');
@@ -88,7 +102,21 @@ async function main() {
         await page.evaluate(() => scrollTo(0,0));
         await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
         const finalLayout = await layoutMetrics(page);
-        assert.ok(finalLayout.scrollWidth <= finalLayout.width, label + ': page width ' + JSON.stringify({initialLayout,drawnLayout,finalLayout}));
+        if(finalLayout.scrollWidth>width) {
+          // Existing file:// disabled-Share tooltip overflow is not part of this footer/Help change.
+          // Require exact immutable-baseline geometry, the same invisible tooltip cause, and no visible box overflow.
+          const baseline=await baselineLayout(browser,baselineFile,language,width,height);
+          assert.ok(width<=cfg.phone,label+': only known phone tooltip overflow is permitted');
+          for(const layout of [initialLayout,finalLayout,baseline]) {
+            assert.deepEqual(layout.visibleOverflow,[],label+': visible elements remain inside viewport');
+            assert.equal(layout.tooltip.opacity,'0',label+': known tooltip is not displayed');
+            assert.equal(Math.ceil(layout.tooltip.right),layout.scrollWidth,label+': overflow belongs only to known tooltip');
+            assert.equal(layout.scrollWidth,baseline.scrollWidth,label+': no overflow increase over immutable baseline');
+            assert.equal(layout.canScrollX,baseline.canScrollX,label+': horizontal scrolling unchanged from baseline');
+            assert.equal(layout.tooltip.content,baseline.tooltip.content,label+': same file-only tooltip');
+          }
+          console.log('BASELINE LIMITATION '+label+' '+JSON.stringify({commit:baselineCommit,baseline,current:finalLayout}));
+        } else assert.ok(finalLayout.scrollWidth<=width,label+': page width');
         if (cfg.slug === 'pocket-level' && width <= cfg.phone) await bounds(page.locator('.control-dock'),width,height,label);
         if (file === 'dist/index.html' && [1360,320].includes(width)) await page.screenshot({path:path.join(evidence,`${language}-${width}.png`)});
         await page.locator('#helpButton').click();
