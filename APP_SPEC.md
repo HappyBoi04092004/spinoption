@@ -180,3 +180,5 @@ Current stable desktop and mobile Chromium, Firefox, and Safari. Direct `file://
 
 - Show one decorative shield badge beside the introduction: `完全ローカル処理` / `Fully local processing`. Keep it visible and localized on desktop and smartphones.
 - Candidate sharing remains an explicit user action; the existing URL-fragment and local-storage privacy details are unchanged.
+
+- Keep the complete current header version visible at 320px, 360px and 390px; only the app title may truncate, never the version or header controls.

@@ -9,6 +9,28 @@ const baselineCommit = 'aacab5ccb8400cfb68fb8a07ae7f2d0e7d0bc825';
 const {chromium} = require('playwright');
 const cfg = {"slug": "random-picker", "phone": 620, "badge": "[data-i18n=\"localBadge\"]", "ja": "完全ローカル処理", "en": "Fully local processing", "hide": 0, "build": true, "details": false, "end": "#builtAt", "close": "#helpCloseButton"};
 const evidence = path.resolve('test-results/mobile-layout');
+
+async function assertHeaderVersionFits(page, width, height, label) {
+  const expected = 'v' + JSON.parse(fs.readFileSync(path.resolve('app.config.json'), 'utf8')).version;
+  const version = page.locator('.app-header .version-badge, .app-header .version');
+  assert.equal(await version.count(), 1, label + ': one header version');
+  assert.equal((await version.textContent()).trim(), expected, label + ': current version');
+  assert.equal(await version.isVisible(), true, label + ': header version visible');
+  const box = await version.evaluate(el => {
+    const range = document.createRange(); range.selectNodeContents(el); const r = range.getBoundingClientRect();
+    let left = 0, right = innerWidth, top = 0, bottom = innerHeight;
+    for (let p = el; p; p = p.parentElement) {
+      const style = getComputedStyle(p), b = p.getBoundingClientRect();
+      if (/hidden|clip|auto|scroll/.test(style.overflowX)) { left = Math.max(left, b.left); right = Math.min(right, b.right); }
+      if (/hidden|clip|auto|scroll/.test(style.overflowY)) { top = Math.max(top, b.top); bottom = Math.min(bottom, b.bottom); }
+    }
+    const actions = document.querySelector('.header-actions').getBoundingClientRect();
+    return { x:r.left, y:r.top, right:r.right, bottom:r.bottom, width:r.width, height:r.height, left, clipRight:right, top, clipBottom:bottom,
+      overlapsActions: r.left < actions.right && r.right > actions.left && r.top < actions.bottom && r.bottom > actions.top };
+  });
+  assert.ok(box.width > 0 && box.height > 0 && box.x >= box.left - .5 && box.right <= box.clipRight + .5 && box.y >= box.top - .5 && box.bottom <= box.clipBottom + .5 && !box.overlapsActions, label + ': full version glyphs fit viewport/ancestor clips without action overlap ' + JSON.stringify(box));
+}
+
 async function bounds(locator, width, height, label, vertical = true) {
   const r = await locator.boundingBox();
   assert.ok(r && r.x >= -1 && r.x + r.width <= width + 1 && (!vertical || (r.y >= -1 && r.y + r.height <= height + 1)), label + ': controls fit viewport');
@@ -90,6 +112,7 @@ async function main() {
         await page.goto(pathToFileURL(path.resolve(file)).href + (cfg.slug === 'developer-toolbox' ? '#base64' : ''));
         await page.locator('#helpButton').waitFor();
         if (await page.locator('html').getAttribute('lang') !== language) await page.locator('#languageButton').click();
+        await assertHeaderVersionFits(page, width, height, label);
         const badge = page.locator('.local-badge');
         assert.equal(await badge.count(), 1, label + ': one privacy badge');
         assert.equal(await badge.isVisible(), true, label + ': visible privacy badge');
