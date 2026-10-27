@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Verify the complete current header version at narrow phone widths; reserve space for the version beside truncated app titles.
+
+- 1.0.4: Added the visible shield privacy badge with `完全ローカル処理` / `Fully local processing`, preserving explicit candidate-sharing and storage disclosures.
+
 - Bound only the Help scrolling body to its existing dialog height so the relocated build metadata stays reachable; this also avoids the pre-existing desktop clipping of long Help content.
 
 - Hide the informational footer on phones and move its existing build version/date to the end of Help without changing the sticky Run action or candidate-specific privacy wording.

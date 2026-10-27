@@ -172,6 +172,13 @@ Current stable desktop and mobile Chromium, Firefox, and Safari. Direct `file://
 - Help accurately describes privacy, storage, editing reset behavior, and wheel limits.
 - At narrow and short viewports, outside-wheel scrolling must not move the page behind an open modal; inner dialog content remains scrollable, and closing restores normal page scrolling.
 
-- Hide only the informational page footer at the existing 620px smartphone breakpoint, preserving the sticky Run action. Show the existing version/date metadata at the end of Help on desktop and phones; keep the candidate-specific privacy message unchanged.
+- Hide only the informational page footer at the existing 620px smartphone breakpoint, preserving the sticky Run action. Show the existing version/date metadata at the end of Help on desktop and phones; keep the detailed candidate-sharing privacy explanation unchanged.
 
 - Keep the Help header within the existing dialog bounds while its body shrinks and scrolls, including the relocated final build metadata on desktop and phones. Other dialogs and drawing behavior are unchanged.
+
+## Local-processing badge (v1.0.4)
+
+- Show one decorative shield badge beside the introduction: `完全ローカル処理` / `Fully local processing`. Keep it visible and localized on desktop and smartphones.
+- Candidate sharing remains an explicit user action; the existing URL-fragment and local-storage privacy details are unchanged.
+
+- Keep the complete current header version visible at 320px, 360px and 390px; only the app title may truncate, never the version or header controls.
