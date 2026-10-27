@@ -23,7 +23,7 @@ function headerFixture() {
     const attribute = selector.match(/^\[(data-i18n[\w-]*)\]$/)?.[1];
     return attribute ? translated.filter(element => element.getAttribute(attribute) !== null) : query(selector);
   };
-  return app;
+  return { ...app, translated };
 }
 
 for (const [language, text, target] of [['en', 'JA', 'Switch to Japanese'], ['ja', 'EN', '英語に切り替え']]) {
@@ -61,4 +61,15 @@ test('repeated language clicks persist the language and preserve the active cand
   assert.equal(app.get('#helpDialog').open, true);
   app.get('#helpCloseButton').dispatch('click');
   assert.equal(app.get('#helpDialog').open, false);
+});
+
+// Missing badge markup or a stale translation leaves the local-processing promise invisible.
+test('local-processing badge is present and follows repeated language switches', () => {
+  const app = headerFixture();
+  const badgeLabels = app.translated.filter(element => element.dataset.i18n === 'localBadge');
+  assert.equal(badgeLabels.length, 1, 'one visible badge label is bound to translation');
+  for (const [language, expected] of [['ja', '完全ローカル処理'], ['en', 'Fully local processing'], ['ja', '完全ローカル処理']]) {
+    app.api.setLanguage(language);
+    assert.equal(badgeLabels[0].textContent, expected);
+  }
 });

@@ -7,7 +7,7 @@ const {pathToFileURL} = require('node:url');
 const {execFileSync} = require('node:child_process');
 const baselineCommit = 'aacab5ccb8400cfb68fb8a07ae7f2d0e7d0bc825';
 const {chromium} = require('playwright');
-const cfg = {"slug": "random-picker", "phone": 620, "badge": "[data-i18n=\"localBadge\"]", "ja": "候補は端末内だけで処理", "en": "Processed only on this device", "hide": 0, "build": true, "details": false, "end": "#builtAt", "close": "#helpCloseButton"};
+const cfg = {"slug": "random-picker", "phone": 620, "badge": "[data-i18n=\"localBadge\"]", "ja": "完全ローカル処理", "en": "Fully local processing", "hide": 0, "build": true, "details": false, "end": "#builtAt", "close": "#helpCloseButton"};
 const evidence = path.resolve('test-results/mobile-layout');
 async function bounds(locator, width, height, label, vertical = true) {
   const r = await locator.boundingBox();
@@ -76,7 +76,7 @@ async function main() {
   const browser = await chromium.launch();
   try {
     const cases = [];
-    for (const language of ['ja','en']) for (const [width,height] of [[1360,900],[cfg.phone+1,568],[cfg.phone,568],[320,568],[393,252]]) cases.push({file:'dist/index.html',language,width,height});
+    for (const language of ['ja','en']) for (const [width,height] of [[1360,900],[cfg.phone+1,568],[cfg.phone,568],[320,568],[360,640],[390,844],[393,252]]) cases.push({file:'dist/index.html',language,width,height});
     cases.push({file:'dist/index.self-extract.html',language:'en',width:360,height:640});
     cases.push({file:cfg.slug+'.html',language:'ja',width:1360,height:900});
     for (const {file,language,width,height} of cases) {
@@ -90,8 +90,13 @@ async function main() {
         await page.goto(pathToFileURL(path.resolve(file)).href + (cfg.slug === 'developer-toolbox' ? '#base64' : ''));
         await page.locator('#helpButton').waitFor();
         if (await page.locator('html').getAttribute('lang') !== language) await page.locator('#languageButton').click();
-        // The candidate-specific dictionary entry is unused; do not invent a badge.
-        assert.equal(await page.locator('.local-badge').count(),0,label + ': no privacy badge added');
+        const badge = page.locator('.local-badge');
+        assert.equal(await badge.count(), 1, label + ': one privacy badge');
+        assert.equal(await badge.isVisible(), true, label + ': visible privacy badge');
+        assert.equal((await badge.textContent()).trim(), language === 'ja' ? cfg.ja : cfg.en);
+        assert.equal(await badge.locator('svg[aria-hidden="true"]').count(), 1);
+        assert.match(await badge.locator('svg path').first().getAttribute('d'), /^M12 3 /);
+        await bounds(badge, width, height, label, false);
         assert.equal(await page.locator('body > footer').isVisible(), width > cfg.phone, label + ': informational footer');
         const initialLayout = await layoutMetrics(page);
         await controls(page, width, height, label);
