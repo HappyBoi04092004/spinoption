@@ -1,12 +1,12 @@
-<!doctype html>
-<html lang="ja">
+  <!doctype html>
+<html lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f5f5f2">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; media-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
-  <title>Random Picker</title>
+  <title>SpinOption - Vòng Quay & Bốc Thăm Ngẫu Nhiên</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2316624f'/%3E%3Cpath d='M18 20h18M18 32h12M18 44h16' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='44' cy='32' r='9' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='m41 32 2 2 5-6' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
     :root {
@@ -32,6 +32,301 @@
       --radius: 12px;
       --header-height: 66px;
     }
+
+    /* Multi-board selector and grid styles */
+    .board-selector-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px 18px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-sm);
+    }
+    .board-selector-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--text);
+    }
+    .board-selector-icon {
+      width: 22px;
+      height: 22px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .board-count-control {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-muted);
+      padding: 4px;
+      border-radius: 9px;
+      border: 1px solid var(--line);
+    }
+    .board-count-control .segmented-button {
+      padding: 6px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s ease;
+    }
+    .board-count-control .segmented-button:hover {
+      color: var(--text);
+    }
+    .board-count-control .segmented-button[aria-pressed="true"] {
+      background: var(--surface);
+      color: var(--accent);
+      box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    .run-all-boards-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 20px;
+      font-weight: 700;
+      font-size: 14px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: all .15s ease;
+    }
+    .run-all-boards-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    .run-all-boards-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+    .multi-board-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      margin-bottom: 24px;
+    }
+    .board-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      position: relative;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .board-card:hover {
+      border-color: var(--line-strong);
+      box-shadow: 0 4px 16px rgba(0,0,0,.06);
+    }
+    .board-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--surface-muted);
+      padding-bottom: 10px;
+    }
+    .board-card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .board-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .board-card-title-input {
+      font-weight: 700;
+      font-size: 15px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      border-radius: 6px;
+      padding: 4px 8px;
+      width: 100%;
+      transition: all .15s ease;
+    }
+    .board-card-title-input:hover, .board-card-title-input:focus {
+      border-color: var(--line);
+      background: var(--surface-warm);
+      outline: none;
+    }
+    .board-card-modes {
+      display: flex;
+      gap: 4px;
+      background: var(--surface-muted);
+      padding: 3px;
+      border-radius: 8px;
+    }
+    .board-card-mode-btn {
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .board-card-mode-btn[aria-selected="true"] {
+      background: var(--surface);
+      color: var(--accent);
+      box-shadow: 0 1px 2px rgba(0,0,0,.06);
+    }
+    .board-textarea-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .board-card-textarea {
+      width: 100%;
+      height: 120px;
+      min-height: 90px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 13.5px;
+      line-height: 1.5;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface-warm);
+      color: var(--text);
+      box-sizing: border-box;
+    }
+    .board-card-textarea:focus {
+      border-color: var(--accent);
+      outline: none;
+      background: #fff;
+    }
+    .board-card-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .board-card-stats {
+      font-size: 12.5px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .board-card-btn-sample {
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text);
+    }
+    .board-card-btn-sample:hover {
+      background: var(--surface-muted);
+    }
+    .board-card-action-btn {
+      width: 100%;
+      padding: 10px 16px;
+      font-size: 14.5px;
+      font-weight: 700;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all .15s ease;
+    }
+    .board-card-action-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+    .board-card-action-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .board-card-stage {
+      min-height: 140px;
+      background: var(--surface-warm);
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .board-card-wheel-canvas {
+      width: 160px;
+      height: 160px;
+      max-width: 100%;
+      cursor: pointer;
+    }
+    .board-card-winner {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+      margin-top: 6px;
+      word-break: break-word;
+      animation: popIn .3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.8); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .board-card-order-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      width: 100%;
+      text-align: left;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 13px;
+    }
+    .board-card-order-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      background: var(--surface);
+      border-radius: 4px;
+    }
+    .board-card-order-num {
+      font-weight: 700;
+      color: var(--accent);
+      min-width: 20px;
+    }
+
     * { box-sizing: border-box; }
     html { min-height: 100%; background: var(--bg); scroll-behavior: smooth; }
     body {
@@ -451,13 +746,13 @@
           </svg>
         </div>
         <div class="brand-copy">
-          <p class="brand-name"><span id="brandName">Random Picker</span><span class="version-badge" id="versionBadge">v1.0.4</span></p>
-          <p class="brand-meta" data-i18n="brandMeta">Pick · Order · Teams · Wheel</p>
+          <p class="brand-name"><span id="brandName">SpinOption</span><span class="version-badge" id="versionBadge">v1.0.4</span></p>
+          <p class="brand-meta" data-i18n="brandMeta">Bốc thăm · Thứ tự · Chia nhóm · Vòng quay</p>
         </div>
       </div>
       <div class="header-actions">
-        <button class="language-button" id="languageButton" type="button" data-i18n-title="switchLanguage" data-i18n-aria-label="switchLanguage" title="英語に切り替え" aria-label="英語に切り替え">EN</button>
-        <button class="header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="使い方と注意事項" aria-label="使い方と注意事項">
+        <button class="language-button" id="languageButton" type="button" data-i18n-title="switchLanguage" data-i18n-aria-label="switchLanguage" title="Chuyển sang tiếng Anh" aria-label="Chuyển sang tiếng Anh">EN</button>
+        <button class="header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="Hướng dẫn & Lưu ý" aria-label="Hướng dẫn & Lưu ý">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.35 2.35 0 1 1 3.72 1.9c-.92.67-1.52 1.12-1.52 2.1"/><path d="M12 17h.01"/></svg>
         </button>
       </div>
@@ -467,62 +762,88 @@
   <main class="main">
     <section class="page-intro" aria-labelledby="heroTitle">
       <div>
-        <h1 id="heroTitle" data-i18n="introTitle">候補を貼って、すぐ抽選。</h1>
-        <p data-i18n="lead">1行1候補。抽選・順番決め・チーム分け・ルーレットを、これひとつですぐ使えます。</p>
+        <h1 id="heroTitle" data-i18n="introTitle">Dán danh sách, bốc thăm ngay.</h1>
+        <p data-i18n="lead">Mỗi dòng một lựa chọn. Bốc thăm trúng thưởng, xếp thứ tự, chia nhóm hoặc quay vòng quay chỉ với một công cụ đơn giản.</p>
       </div>
       <span class="local-badge">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 5 6v5c0 4.6 2.8 8 7 10 4.2-2 7-5.4 7-10V6z"/><path d="m9 12 2 2 4-5"/></svg>
-        <span data-i18n="localBadge">完全ローカル処理</span>
+        <span data-i18n="localBadge">Xử lý 100% trên thiết bị</span>
       </span>
     </section>
 
     <!-- APP:BEGIN -->
+    <div class="board-selector-bar">
+      <div class="board-selector-info">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="board-selector-icon" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <line x1="12" y1="3" x2="12" y2="21"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+        </svg>
+        <span class="board-selector-title">Số lượng bảng random:</span>
+      </div>
+      <div class="segmented-control board-count-control" id="boardCountControl" role="group" aria-label="Số bảng random">
+        <button class="segmented-button" type="button" data-board-count="1" aria-pressed="true">1 bảng</button>
+        <button class="segmented-button" type="button" data-board-count="2" aria-pressed="false">2 bảng</button>
+        <button class="segmented-button" type="button" data-board-count="3" aria-pressed="false">3 bảng</button>
+        <button class="segmented-button" type="button" data-board-count="4" aria-pressed="false">4 bảng</button>
+        <button class="segmented-button" type="button" data-board-count="5" aria-pressed="false">5 bảng</button>
+      </div>
+      <button class="button primary run-all-boards-btn" id="runAllBoardsButton" type="button" hidden>
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        <span>Quay / Bốc thăm tất cả</span>
+      </button>
+    </div>
+
+    <div class="multi-board-grid" id="multiBoardContainer" hidden></div>
+
     <div class="workspace-grid">
       <section class="panel input-panel" aria-labelledby="candidateTitle">
         <div class="panel-head">
           <div>
-            <h2 class="panel-title" id="candidateTitle" data-i18n="candidateTitle">候補</h2>
-            <p class="panel-desc" data-i18n="candidateDesc">1行に1つずつ入力・貼り付け</p>
+            <h2 class="panel-title" id="candidateTitle" data-i18n="candidateTitle">Lựa chọn</h2>
+            <p class="panel-desc" data-i18n="candidateDesc">Nhập hoặc dán mỗi lựa chọn trên một dòng</p>
           </div>
           <div class="candidate-stats" aria-live="polite">
-            <div class="stat-pill"><strong id="candidateCount">0</strong><span data-i18n="items">件</span></div>
-            <div class="stat-pill" id="remainingStat"><strong id="remainingCount">0</strong><span data-i18n="remaining">残り</span></div>
+            <div class="stat-pill"><strong id="candidateCount">0</strong><span data-i18n="items">mục</span></div>
+            <div class="stat-pill" id="remainingStat"><strong id="remainingCount">0</strong><span data-i18n="remaining">còn lại</span></div>
           </div>
         </div>
 
-        <label class="sr-only" for="candidateInput" data-i18n="candidateInputLabel">候補入力</label>
-        <textarea id="candidateInput" spellcheck="false" maxlength="500000" data-i18n-placeholder="candidatePlaceholder" placeholder="田中\n鈴木\n佐藤\n高木"></textarea>
+        <label class="sr-only" for="candidateInput" data-i18n="candidateInputLabel">Danh sách lựa chọn</label>
+        <textarea id="candidateInput" spellcheck="false" maxlength="500000" data-i18n-placeholder="candidatePlaceholder" placeholder="Ba Vì&#10;Tam Đảo&#10;Tà Xùa&#10;Đà Lạt"></textarea>
 
         <div class="input-footer">
           <div class="input-hint" id="candidateHint" aria-live="polite"></div>
           <div class="button-row">
             <button class="button ghost" id="savedListsButton" type="button">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5h14v14H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg><span class="compact-label" data-mobile-en="Lists" data-i18n="savedLists">保存リスト</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5h14v14H5z"/><path d="M8 5v5h8V5M8 19v-6h8v6"/></svg><span class="compact-label" data-mobile-en="Lists" data-i18n="savedLists">Danh sách đã lưu</span>
             </button>
             <span class="share-button-wrap" id="shareCandidatesWrap">
               <button class="button ghost" id="shareCandidatesButton" type="button" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg><span class="compact-label" data-mobile-en="Share" data-i18n="shareCandidates">候補を共有</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/></svg><span class="compact-label" data-mobile-en="Share" data-i18n="shareCandidates">Chia sẻ</span>
               </button>
             </span>
-            <button class="button ghost" id="sampleButton" type="button"><span class="compact-label" data-mobile-en="Sample" data-i18n="sample">サンプル</span></button>
+            <button class="button ghost" id="sampleButton" type="button"><span class="compact-label" data-mobile-en="Sample" data-i18n="sample">Mẫu</span></button>
             <div class="app-popover" data-popover-root>
               <button class="button ghost" id="cleanMenuButton" type="button" data-popover-trigger aria-controls="cleanMenu" aria-expanded="false">
-                <span class="compact-label" data-mobile-en="Clean" data-i18n="organize">整理</span>
+                <span class="compact-label" data-mobile-en="Clean" data-i18n="organize">Sắp xếp</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 9 5 5 5-5"/></svg>
               </button>
               <div class="app-popover-panel" id="cleanMenu" data-popover-panel hidden>
                 <button class="app-popover-item" id="trimButton" type="button">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14M8 12h8M10 17h4"/></svg><span data-i18n="trimLines">前後の空白を整理</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14M8 12h8M10 17h4"/></svg><span data-i18n="trimLines">Xóa khoảng trắng thừa</span>
                 </button>
                 <button class="app-popover-item" id="removeBlankButton" type="button">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14M5 17h14"/><path d="M8 12h8" stroke-dasharray="2 2"/></svg><span data-i18n="removeBlank">空行を削除</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 7h14M5 17h14"/><path d="M8 12h8" stroke-dasharray="2 2"/></svg><span data-i18n="removeBlank">Xóa dòng trống</span>
                 </button>
                 <button class="app-popover-item" id="removeDuplicatesButton" type="button">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="10" height="10" rx="2"/><path d="M9 9h10v10H9"/></svg><span data-i18n="removeDuplicates">重複を削除</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="10" height="10" rx="2"/><path d="M9 9h10v10H9"/></svg><span data-i18n="removeDuplicates">Xóa trùng lặp</span>
                 </button>
                 <div class="app-popover-separator"></div>
                 <button class="app-popover-item danger" id="clearButton" type="button">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M8 7l1 13h6l1-13"/></svg><span data-i18n="clear">すべて消去</span>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M9 7V4h6v3M8 7l1 13h6l1-13"/></svg><span data-i18n="clear">Xóa tất cả</span>
                 </button>
               </div>
             </div>
@@ -530,16 +851,15 @@
         </div>
 
         <div class="mode-strip" role="tablist" aria-label="Mode">
-          <button class="mode-button" type="button" data-mode="pick" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h4l7 10h3"/><path d="m16 5 3 2-3 2M5 17h4l2-3"/></svg><span data-i18n="modePick">抽選</span></button>
-          <button class="mode-button" type="button" data-mode="order" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11"/><path d="m3.5 5 1.5 1.5L6.5 5M3.5 11 5 12.5 6.5 11M3.5 17 5 18.5 6.5 17"/></svg><span data-i18n="modeOrder">順番</span></button>
-          <button class="mode-button" type="button" data-mode="teams" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c.6-3.3 2.3-5 5-5s4.4 1.7 5 5M14 15c1-.8 2-1.2 3.2-1.2 2.1 0 3.4 1.3 3.8 3.7"/></svg><span data-i18n="modeTeams">チーム</span></button>
-          <button class="mode-button" type="button" data-mode="wheel" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5.7 5.7M12 12 5.1 16"/><circle cx="12" cy="12" r="1.5"/></svg><span data-i18n="modeWheel">ルーレット</span></button>
+          <button class="mode-button" type="button" data-mode="pick" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h4l7 10h3"/><path d="m16 5 3 2-3 2M5 17h4l2-3"/></svg><span data-i18n="modePick">Bốc thăm</span></button>
+          <button class="mode-button" type="button" data-mode="order" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h11M8 12h11M8 18h11"/><path d="m3.5 5 1.5 1.5L6.5 5M3.5 11 5 12.5 6.5 11M3.5 17 5 18.5 6.5 17"/></svg><span data-i18n="modeOrder">Thứ tự</span></button>
+          <button class="mode-button" type="button" data-mode="wheel" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l5.7 5.7M12 12 5.1 16"/><circle cx="12" cy="12" r="1.5"/></svg><span data-i18n="modeWheel">Vòng quay</span></button>
         </div>
 
         <div id="pickSettings">
           <div class="settings-card">
             <div class="field">
-              <label class="field-label" for="pickCount" data-i18n="pickCount">抽選数</label>
+              <label class="field-label" for="pickCount" data-i18n="pickCount">Số lượng cần chọn</label>
               <div class="number-control">
                 <button type="button" data-step-target="pickCount" data-step="-1" aria-label="Decrease">−</button>
                 <input id="pickCount" type="number" inputmode="numeric" min="1" max="1000" value="1">
@@ -547,10 +867,10 @@
               </div>
             </div>
             <div class="field">
-              <span class="field-label" data-i18n="nextDraw">次の抽選</span>
+              <span class="field-label" data-i18n="nextDraw">Lượt chọn tiếp theo</span>
               <div class="switch-row">
-                <div class="switch-copy"><strong data-i18n="excludeSelected">選んだ候補を除外</strong><span data-i18n="excludeSelectedHint">当選済みを次回から外す</span></div>
-                <label class="switch"><input id="excludeToggle" type="checkbox"><span class="switch-track" aria-hidden="true"></span><span class="sr-only" data-i18n="excludeSelected">選んだ候補を除外</span></label>
+                <div class="switch-copy"><strong data-i18n="excludeSelected">Loại trừ mục đã chọn</strong><span data-i18n="excludeSelectedHint">Không chọn lại những mục đã trúng ở lượt sau</span></div>
+                <label class="switch"><input id="excludeToggle" type="checkbox"><span class="switch-track" aria-hidden="true"></span><span class="sr-only" data-i18n="excludeSelected">Loại trừ mục đã chọn</span></label>
               </div>
             </div>
           </div>
@@ -559,26 +879,26 @@
         <div id="orderSettings" hidden>
           <div class="settings-card">
             <div class="field">
-              <span class="field-label" data-i18n="orderPresentation">大きく表示するとき</span>
+              <span class="field-label" data-i18n="orderPresentation">Khi hiển thị lớn</span>
               <div class="segmented-control" id="orderPresentationControl">
-                <button class="segmented-button" type="button" data-order-presentation="one" aria-pressed="true" data-i18n="oneByOne">1人ずつ発表</button>
-                <button class="segmented-button" type="button" data-order-presentation="all" aria-pressed="false" data-i18n="showAll">一覧で表示</button>
+                <button class="segmented-button" type="button" data-order-presentation="one" aria-pressed="true" data-i18n="oneByOne">Hiện từng mục một</button>
+                <button class="segmented-button" type="button" data-order-presentation="all" aria-pressed="false" data-i18n="showAll">Hiện toàn bộ danh sách</button>
               </div>
             </div>
           </div>
         </div>
 
-        <div id="teamSettings" hidden>
+        <div id="teamSettings" hidden style="display:none !important">
           <div class="settings-card">
             <div class="field">
-              <span class="field-label" data-i18n="teamSplitMethod">分け方</span>
+              <span class="field-label" data-i18n="teamSplitMethod">Cách chia nhóm</span>
               <div class="segmented-control" id="teamSplitControl">
-                <button class="segmented-button" type="button" data-team-split="count" aria-pressed="true" data-i18n="splitByCount">チーム数</button>
-                <button class="segmented-button" type="button" data-team-split="size" aria-pressed="false" data-i18n="splitBySize">1チームの人数</button>
+                <button class="segmented-button" type="button" data-team-split="count" aria-pressed="true" data-i18n="splitByCount">Theo số nhóm</button>
+                <button class="segmented-button" type="button" data-team-split="size" aria-pressed="false" data-i18n="splitBySize">Số người mỗi nhóm</button>
               </div>
             </div>
             <div class="field" id="teamCountField">
-              <label class="field-label" for="teamCount" data-i18n="teamCount">チーム数</label>
+              <label class="field-label" for="teamCount" data-i18n="teamCount">Số nhóm</label>
               <div class="number-control">
                 <button type="button" data-step-target="teamCount" data-step="-1" aria-label="Decrease">−</button>
                 <input id="teamCount" type="number" inputmode="numeric" min="2" max="50" value="2">
@@ -586,7 +906,7 @@
               </div>
             </div>
             <div class="field" id="teamSizeField" hidden>
-              <label class="field-label" for="teamSize" data-i18n="teamSize">1チームの人数</label>
+              <label class="field-label" for="teamSize" data-i18n="teamSize">Số người mỗi nhóm</label>
               <div class="number-control">
                 <button type="button" data-step-target="teamSize" data-step="-1" aria-label="Decrease">−</button>
                 <input id="teamSize" type="number" inputmode="numeric" min="1" max="1000" value="4">
@@ -594,7 +914,7 @@
               </div>
             </div>
             <div class="field">
-              <span class="field-label" data-i18n="teamPreview">分けた結果</span>
+              <span class="field-label" data-i18n="teamPreview">Kết quả chia nhóm</span>
               <div class="setting-summary" id="teamSummary"></div>
             </div>
           </div>
@@ -603,9 +923,9 @@
         <div id="wheelSettings" hidden>
           <div class="settings-card single">
             <div class="field">
-              <span class="field-label" data-i18n="wheelDisplay">表示</span>
+              <span class="field-label" data-i18n="wheelDisplay">Hiển thị</span>
               <button class="button field-button" id="wheelLargeButton" type="button" disabled>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg><span data-i18n="openLargeWheel">大きなルーレットで回す</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg><span data-i18n="openLargeWheel">Mở vòng quay lớn</span>
               </button>
             </div>
           </div>
@@ -613,46 +933,46 @@
 
         <button class="button primary primary-action" id="runButton" type="button" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h4l7 10h3"/><path d="m16 5 3 2-3 2M5 17h4l2-3"/></svg>
-          <span id="runButtonLabel" data-i18n="runPick">選ぶ</span>
+          <span id="runButtonLabel" data-i18n="runPick">Bốc thăm</span>
         </button>
         <div class="session-row">
-          <span id="sessionStatus" data-i18n="fairRandom">各候補を同じ確率で抽選</span>
-          <button class="button ghost" id="restorePoolButton" type="button" hidden data-i18n="restorePool">除外をすべて戻す</button>
+          <span id="sessionStatus" data-i18n="fairRandom">Xác suất ngẫu nhiên đồng đều cho mỗi lựa chọn</span>
+          <button class="button ghost" id="restorePoolButton" type="button" hidden data-i18n="restorePool">Khôi phục các mục đã loại trừ</button>
         </div>
       </section>
 
       <section class="panel result-panel" aria-labelledby="resultTitle">
         <div class="result-head">
-          <h2 id="resultTitle" data-i18n="resultTitle">結果</h2>
+          <h2 id="resultTitle" data-i18n="resultTitle">Kết quả</h2>
           <div class="result-actions">
             <button class="button ghost" id="copyResultButton" type="button" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span class="label-desktop" id="copyResultLabel" data-i18n="copy">コピー</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span class="label-desktop" id="copyResultLabel" data-i18n="copy">Sao chép</span>
             </button>
             <button class="button ghost order-copy-button" id="copyOrderNumberedButton" type="button" hidden disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span data-i18n="copyOrderNumbered">番号ありでコピー</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span data-i18n="copyOrderNumbered">Sao chép kèm số thứ tự</span>
             </button>
             <button class="button ghost order-copy-button" id="copyOrderPlainButton" type="button" hidden disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span data-i18n="copyOrderPlain">番号なしでコピー</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg><span data-i18n="copyOrderPlain">Chỉ sao chép tên</span>
             </button>
             <button class="button ghost" id="presentButton" type="button" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg><span class="label-desktop" data-i18n="present">大きく表示</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/></svg><span class="label-desktop" data-i18n="present">Hiển thị lớn</span>
             </button>
           </div>
         </div>
         <div class="result-stage" id="resultStage" aria-live="polite">
           <div class="empty-result" id="emptyResult">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 7h4l7 10h3"/><path d="m16 5 3 2-3 2M5 17h4l2-3"/></svg>
-            <strong data-i18n="emptyResultTitle">候補を入力すると抽選できます</strong>
-            <span data-i18n="emptyResultBody">候補は1行に1つ。重複した名前も別候補として扱います。</span>
+            <strong data-i18n="emptyResultTitle">Nhập danh sách để bắt đầu</strong>
+            <span data-i18n="emptyResultBody">Mỗi dòng một lựa chọn. Các dòng trùng tên vẫn được tính là các lựa chọn riêng biệt.</span>
           </div>
           <div id="resultContent" hidden></div>
         </div>
         <div class="result-footer">
           <button class="button" id="againButton" type="button" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M19 12a7 7 0 1 0-2 5"/></svg><span data-i18n="again">もう一度</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 7v5h-5"/><path d="M19 12a7 7 0 1 0-2 5"/></svg><span data-i18n="again">Thực hiện lại</span>
           </button>
           <button class="button" id="shareButton" type="button" disabled>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.3 10.9 7.4-4.5M8.3 13.1l7.4 4.5"/></svg><span data-i18n="share">共有</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.3 10.9 7.4-4.5M8.3 13.1l7.4 4.5"/></svg><span data-i18n="share">Chia sẻ</span>
           </button>
         </div>
       </section>
@@ -660,11 +980,11 @@
 
     <section class="history-section" aria-labelledby="historyTitle">
       <div class="section-head">
-        <div><h2 id="historyTitle" data-i18n="historyTitle">抽選履歴</h2><p data-i18n="historyDesc">このリストの最近の抽選・ルーレット結果を最大50件記録</p></div>
-        <button class="button ghost danger" id="clearHistoryButton" type="button" disabled data-i18n="clearHistory">履歴を消去</button>
+        <div><h2 id="historyTitle" data-i18n="historyTitle">Lịch sử</h2><p data-i18n="historyDesc">Lưu tối đa 50 kết quả bốc thăm & quay số gần nhất cho danh sách này</p></div>
+        <button class="button ghost danger" id="clearHistoryButton" type="button" disabled data-i18n="clearHistory">Xóa lịch sử</button>
       </div>
       <div class="panel history-panel">
-        <div class="history-empty" id="historyEmpty" data-i18n="historyEmpty">まだ抽選結果はありません。</div>
+        <div class="history-empty" id="historyEmpty" data-i18n="historyEmpty">Chưa có kết quả bốc thăm nào.</div>
         <div class="history-list" id="historyList" hidden></div>
       </div>
     </section>
@@ -673,7 +993,7 @@
 
   <footer>
     <div class="footer-inner">
-      <span><span id="footerName">Random Picker</span> · <span data-i18n="footer">候補を外部へ送信しない単一HTMLツール</span></span>
+      <span><span id="footerName">SpinOption</span> · <span data-i18n="footer">Công cụ bốc thăm, xếp thứ tự, chia nhóm và quay số ngẫu nhiên tất cả trong một</span></span>
     </div>
   </footer>
 
@@ -685,103 +1005,103 @@
 
   <dialog class="app-confirm-dialog" id="appConfirmDialog" aria-labelledby="appConfirmTitle" aria-describedby="appConfirmMessage">
     <div class="dialog-header">
-      <h2 id="appConfirmTitle">確認</h2>
-      <button class="dialog-close" id="appConfirmClose" type="button" data-i18n-aria-label="close" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      <h2 id="appConfirmTitle">Xác nhận</h2>
+      <button class="dialog-close" id="appConfirmClose" type="button" data-i18n-aria-label="close" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="dialog-body">
       <p class="app-confirm-message" id="appConfirmMessage"></p>
       <div class="app-confirm-actions">
-        <button class="button" id="appConfirmCancel" type="button">キャンセル</button>
-        <button class="button danger-fill" id="appConfirmOk" type="button">消去する</button>
+        <button class="button" id="appConfirmCancel" type="button">Hủy</button>
+        <button class="button danger-fill" id="appConfirmOk" type="button">Xóa</button>
       </div>
     </div>
   </dialog>
 
   <dialog id="savedListsDialog" aria-labelledby="savedListsTitle">
     <div class="dialog-header">
-      <h2 id="savedListsTitle" data-i18n="savedListsTitle">候補リストを保存</h2>
-      <button class="dialog-close" id="savedListsCloseButton" type="button" data-i18n-aria-label="close" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      <h2 id="savedListsTitle" data-i18n="savedListsTitle">Lưu danh sách lựa chọn</h2>
+      <button class="dialog-close" id="savedListsCloseButton" type="button" data-i18n-aria-label="close" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="dialog-body">
       <div class="saved-list-form">
-        <label class="sr-only" for="savedListName" data-i18n="listName">リスト名</label>
-        <input class="text-input" id="savedListName" maxlength="40" data-i18n-placeholder="listNamePlaceholder" placeholder="3年A組">
-        <button class="button primary" id="saveNamedListButton" type="button" data-i18n="saveList">保存</button>
+        <label class="sr-only" for="savedListName" data-i18n="listName">Tên danh sách</label>
+        <input class="text-input" id="savedListName" maxlength="40" data-i18n-placeholder="listNamePlaceholder" placeholder="Ví dụ: Địa điểm phượt cuối tuần">
+        <button class="button primary" id="saveNamedListButton" type="button" data-i18n="saveList">Lưu</button>
       </div>
-      <p class="saved-list-note" data-i18n="saveListHint">現在の候補をこの端末に最大30件保存します。同じ名前は確認して置き換えます。</p>
+      <p class="saved-list-note" data-i18n="saveListHint">Lưu tối đa 30 danh sách trên thiết bị này. Nếu trùng tên, hệ thống sẽ hỏi xác nhận để ghi đè.</p>
       <div class="saved-list-editor" id="savedListUpdatePanel" hidden>
         <p id="savedListUpdateMessage"></p>
         <div class="dialog-actions">
-          <button class="button" id="cancelSavedListUpdateButton" type="button" data-i18n="cancel">キャンセル</button>
-          <button class="button danger-fill" id="confirmSavedListUpdateButton" type="button" data-i18n="replaceList">候補を置き換える</button>
+          <button class="button" id="cancelSavedListUpdateButton" type="button" data-i18n="cancel">Hủy</button>
+          <button class="button danger-fill" id="confirmSavedListUpdateButton" type="button" data-i18n="replaceList">Thay thế danh sách</button>
         </div>
       </div>
       <div class="saved-list-editor" id="savedListRenamePanel" hidden>
-        <label class="field-label" for="renameListName" data-i18n="renameList">名前を変更</label>
+        <label class="field-label" for="renameListName" data-i18n="renameList">Đổi tên</label>
         <input class="text-input" id="renameListName" maxlength="40">
         <div class="dialog-actions">
-          <button class="button" id="cancelRenameListButton" type="button" data-i18n="cancel">キャンセル</button>
-          <button class="button primary" id="renameListButton" type="button" data-i18n="saveName">名前を保存</button>
+          <button class="button" id="cancelRenameListButton" type="button" data-i18n="cancel">Hủy</button>
+          <button class="button primary" id="renameListButton" type="button" data-i18n="saveName">Lưu tên</button>
         </div>
       </div>
       <div class="saved-list-status" id="savedListStatus" role="status" aria-live="polite" aria-atomic="true" hidden>
         <span id="savedListStatusMessage"></span>
-        <button class="app-toast-action" id="savedListUndoButton" type="button" data-i18n="undo" hidden>元に戻す</button>
+        <button class="app-toast-action" id="savedListUndoButton" type="button" data-i18n="undo" hidden>Hoàn tác</button>
       </div>
       <div class="saved-list-search">
-        <label class="field-label" for="savedListSearch" data-i18n="searchLists">名前で検索</label>
-        <input class="text-input" id="savedListSearch" type="search" maxlength="40" data-i18n-placeholder="searchLists" placeholder="名前で検索">
+        <label class="field-label" for="savedListSearch" data-i18n="searchLists">Tìm kiếm theo tên</label>
+        <input class="text-input" id="savedListSearch" type="search" maxlength="40" data-i18n-placeholder="searchLists" placeholder="Tìm kiếm theo tên">
         <span class="saved-list-note" id="savedListCount" role="status" aria-live="polite"></span>
       </div>
       <div class="saved-list-items" id="savedListItems"></div>
-      <div class="dialog-empty" id="savedListsEmpty">保存したリストはまだありません。</div>
+      <div class="dialog-empty" id="savedListsEmpty">Chưa có danh sách nào được lưu.</div>
     </div>
   </dialog>
 
   <dialog id="excelPasteDialog" aria-labelledby="excelPasteTitle">
     <div class="dialog-header">
-      <h2 id="excelPasteTitle" data-i18n="excelPasteTitle">表の貼り付けを検出しました</h2>
-      <button class="dialog-close" id="excelPasteCloseButton" type="button" data-i18n-aria-label="close" aria-label="閉じる"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      <h2 id="excelPasteTitle" data-i18n="excelPasteTitle">Phát hiện dữ liệu bảng</h2>
+      <button class="dialog-close" id="excelPasteCloseButton" type="button" data-i18n-aria-label="close" aria-label="Đóng"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="dialog-body">
-      <p data-i18n="excelPasteBody">Excelなどの複数列データです。候補に使う列を選べます。</p>
+      <p data-i18n="excelPasteBody">Dữ liệu dán vào có nhiều cột (từ Excel/Google Sheets). Bạn có thể chọn cột muốn dùng làm danh sách lựa chọn.</p>
       <div class="excel-columns" id="excelColumns"></div>
       <div class="dialog-actions">
-        <button class="button" id="pasteRawButton" type="button" data-i18n="pasteAsIs">そのまま貼り付け</button>
-        <button class="button primary" id="pasteColumnButton" type="button" data-i18n="useSelectedColumn">選んだ列を使う</button>
+        <button class="button" id="pasteRawButton" type="button" data-i18n="pasteAsIs">Dán nguyên bản</button>
+        <button class="button primary" id="pasteColumnButton" type="button" data-i18n="useSelectedColumn">Dùng cột đã chọn</button>
       </div>
     </div>
   </dialog>
 
   <dialog id="helpDialog" aria-labelledby="helpTitle">
     <div class="dialog-header">
-      <h2 id="helpTitle" data-i18n="helpTitle">使い方と注意事項</h2>
-      <button class="dialog-close" id="helpCloseButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="閉じる" aria-label="閉じる">
+      <h2 id="helpTitle" data-i18n="helpTitle">Hướng dẫn & Lưu ý</h2>
+      <button class="dialog-close" id="helpCloseButton" type="button" data-i18n-title="close" data-i18n-aria-label="close" title="Đóng" aria-label="Đóng">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
       </button>
     </div>
     <!-- APP:HELP:BEGIN -->
     <div class="dialog-body">
-      <h3 data-i18n="helpBasicsTitle">基本操作</h3>
+      <h3 data-i18n="helpBasicsTitle">Thao tác cơ bản</h3>
       <ol>
-        <li data-i18n="helpStep1">候補を1行に1つずつ入力または貼り付けます。Excelなど複数列を貼ると、使う列を選べます。空行は抽選時に無視されます。</li>
-        <li data-i18n="helpStep2">「抽選」「順番」「チーム」「ルーレット」から使い方を選び、実行ボタンを押します。</li>
-        <li data-i18n="helpStep3">「選んだ候補を除外」を有効にすると、当選した行は次の抽選から外れます。「除外をすべて戻す」で復元できます。</li>
+        <li data-i18n="helpStep1">Nhập hoặc dán mỗi lựa chọn trên một dòng. Khi dán từ bảng tính (nhiều cột), bạn có thể chọn cột muốn dùng. Các dòng trống sẽ tự động bỏ qua khi bốc thăm.</li>
+        <li data-i18n="helpStep2">Chọn chế độ: Bốc thăm, Thứ tự, Chia nhóm hoặc Vòng quay, sau đó nhấn nút thực hiện.</li>
+        <li data-i18n="helpStep3">Trong chế độ Bốc thăm, bật "Loại trừ mục đã chọn" để loại bỏ các mục đã trúng ở các lượt quay tiếp theo. Cài đặt này không ảnh hưởng đến chế độ Thứ tự, Chia nhóm hay Vòng quay.</li>
       </ol>
-      <h3 data-i18n="helpFairTitle">ランダム性</h3>
-      <p data-i18n="helpFairBody">抽選にはブラウザーの crypto.getRandomValues() を使い、候補を等確率で選びます。同じ文字列が複数行ある場合は、それぞれ別の候補として扱われます。</p>
-      <h3 data-i18n="helpPrivacyTitle">プライバシー</h3>
-      <p class="dialog-note" data-i18n="helpPrivacyBody">候補・設定・抽選結果はこのブラウザー内だけで処理され、このアプリから外部へ送信されません。現在の候補と設定は端末内に自動保存されます。</p>
-      <h3 data-i18n="helpNotesTitle">注意事項</h3>
+      <h3 data-i18n="helpFairTitle">Tính ngẫu nhiên & Công bằng</h3>
+      <p data-i18n="helpFairBody">Ứng dụng sử dụng chuẩn bảo mật crypto.getRandomValues() của trình duyệt để đảm bảo mọi lựa chọn có tỉ lệ trúng hoàn toàn ngang nhau. Các mục trùng tên trên nhiều dòng được tính là những lựa chọn độc lập.</p>
+      <h3 data-i18n="helpPrivacyTitle">Quyền riêng tư & Bảo mật</h3>
+      <p class="dialog-note" data-i18n="helpPrivacyBody">Mọi danh sách lựa chọn, cài đặt và kết quả chỉ được xử lý nội bộ ngay trên trình duyệt của bạn, không gửi bất kỳ dữ liệu nào ra máy chủ bên ngoài. Danh sách hiện tại và cài đặt được tự động lưu trên thiết bị.</p>
+      <h3 data-i18n="helpNotesTitle">Lưu ý khi sử dụng</h3>
       <ul>
-        <li data-i18n="helpNoteEdit">候補を編集すると、除外状態と抽選履歴は新しいリストに合わせてリセットされます。</li>
-        <li data-i18n="helpNoteStorage">ブラウザーのサイトデータを削除すると、自動保存した候補と設定も消える場合があります。</li>
-        <li data-i18n="helpNoteWheel">ルーレット表示は200候補までです。それ以上の候補では通常の抽選を利用してください。</li>
-        <li data-i18n="helpNoteShare">候補共有はURL fragmentを使います。ローカルファイル（file://）では候補共有を無効化しています。</li>
+        <li data-i18n="helpNoteEdit">Khi bạn chỉnh sửa danh sách lựa chọn, trạng thái loại trừ và lịch sử bốc thăm sẽ được làm mới để phù hợp với danh sách mới.</li>
+        <li data-i18n="helpNoteStorage">Nếu bạn xóa dữ liệu trang web trong trình duyệt, danh sách đang mở và các danh sách đã lưu có thể bị mất.</li>
+        <li data-i18n="helpNoteWheel">Chế độ vòng quay hỗ trợ tối đa 200 lựa chọn để đảm bảo hiển thị đẹp mắt và mượt mà. Nếu danh sách dài hơn, vui lòng dùng chế độ Bốc thăm thông thường.</li>
+        <li data-i18n="helpNoteShare">Tính năng chia sẻ nén danh sách vào đoạn URL fragment (sau dấu #), fragment này không gửi lên máy chủ.</li>
       </ul>
-      <p data-i18n="helpSavedLists">保存リストは最大30件。名前で検索・複製・変更でき、直前の変更を元に戻せます。</p>
+      <p data-i18n="helpSavedLists">Lưu tối đa 30 danh sách, tìm kiếm, nhân bản, đổi tên và hỗ trợ hoàn tác thay đổi.</p>
 
-      <p data-i18n="helpShortcut">Ctrl / Cmd + Enter で抽選。ダイアログ内では実行しません。</p>
+      <p data-i18n="helpShortcut">Ctrl / Cmd + Enter để thực hiện bốc thăm/quay số (không hoạt động trong hộp thoại).</p>
       <span class="build-meta"><span>v<span id="buildVersion">1.0.3</span></span><span id="builtAt">—</span></span>
     </div>
     <!-- APP:HELP:END -->
@@ -790,12 +1110,12 @@
   <dialog class="presentation-dialog" id="presentationDialog" aria-labelledby="presentationTitle">
     <div class="presentation-shell">
       <div class="presentation-head">
-        <button class="dialog-close" id="presentationCloseButton" type="button" data-i18n-aria-label="close" aria-label="閉じる">
+        <button class="dialog-close" id="presentationCloseButton" type="button" data-i18n-aria-label="close" aria-label="Đóng">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
         </button>
       </div>
       <div class="presentation-content" id="presentationContent"><div><div class="presentation-kicker" id="presentationKicker"></div><div class="presentation-label" id="presentationTitle"></div><div class="presentation-sub" id="presentationSub"></div></div></div>
-      <div class="presentation-actions"><button class="button" id="presentationPrevButton" type="button" hidden data-i18n="previous">前へ</button><button class="button primary" id="presentationAgainButton" type="button" data-i18n="again">もう一度</button></div>
+      <div class="presentation-actions"><button class="button" id="presentationPrevButton" type="button" hidden data-i18n="previous">Trước</button><button class="button primary" id="presentationAgainButton" type="button" data-i18n="again">Thực hiện lại</button></div>
     </div>
   </dialog>
 
@@ -844,6 +1164,7 @@
       addEventListener('pagehide', () => { blobUrls.forEach(url => URL.revokeObjectURL(url)); blobUrls.clear(); });
 
       const translations = {
+        vi: { "duplicateList": "Nhân bản", "listCopySuffix": " (bản sao)", "listCopyNumberSuffix": " (bản sao {number})", "listDuplicated": "Đã nhân bản “{name}”", "renameList": "Đổi tên", "saveName": "Lưu tên", "searchLists": "Tìm kiếm theo tên", "savedListCount": "Hiển thị {matched} · Đã lưu {total} / {max}", "noMatchingLists": "Không tìm thấy danh sách phù hợp.", "listLimitReached": "Chỉ có thể lưu tối đa {max} danh sách. Hãy xóa bớt hoặc cập nhật danh sách trùng tên.", "listNameDuplicate": "Đã có danh sách trùng tên. Vui lòng chọn tên khác.", "listRenamed": "Đã đổi tên thành “{name}”", "replaceList": "Thay thế danh sách", "replaceListQuestion": "Thay thế các lựa chọn trong “{name}” bằng danh sách hiện tại?", "listStorageFailed": "Không thể lưu thay đổi. Danh sách cũ vẫn được giữ nguyên. Vui lòng kiểm tra dung lượng bộ nhớ trình duyệt.", "helpSavedLists": "Lưu tối đa 30 danh sách, tìm kiếm, nhân bản hoặc đổi tên. Nút \"Nhân bản\" sao chép danh sách đã lưu sang một tên mới mà không thay đổi lượt bốc thăm hiện tại. Nếu đạt giới hạn 30 danh sách, hệ thống sẽ từ chối lưu danh sách thứ 31 để bảo vệ dữ liệu hiện có. Ghi đè danh sách trùng tên sẽ cần xác nhận. Có thể hoàn tác ngay thao tác nhân bản, thay thế, đổi tên hoặc xóa trong màn hình Danh sách đã lưu.", "helpShortcut": "Nhấn Ctrl / Cmd + Enter để thực hiện lượt quay/bốc thăm, hoạt động ngay cả khi đang ở ô nhập danh sách. Phím tắt sẽ không kích hoạt trong hộp thoại hoặc khi đang gõ bằng bộ gõ tiếng Việt.", "brandMeta": "Bốc thăm · Thứ tự · Chia nhóm · Vòng quay", "switchLanguage": "Chuyển sang tiếng Anh", "helpTitle": "Hướng dẫn & Lưu ý", "close": "Đóng", "introTitle": "Dán danh sách, bốc thăm ngay.", "lead": "Mỗi dòng một lựa chọn. Bốc thăm trúng thưởng, xếp thứ tự, chia nhóm hoặc quay vòng quay chỉ với một công cụ đơn giản.", "localBadge": "Xử lý 100% trên thiết bị", "candidateTitle": "Lựa chọn", "candidateDesc": "Nhập hoặc dán mỗi lựa chọn trên một dòng", "candidateInputLabel": "Danh sách lựa chọn", "candidatePlaceholder": "Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt", "items": "mục", "remaining": "còn lại", "sample": "Mẫu", "shareCandidates": "Chia sẻ danh sách", "savedLists": "Danh sách đã lưu", "savedListsTitle": "Lưu danh sách lựa chọn", "listName": "Tên danh sách", "listNamePlaceholder": "Ví dụ: Địa điểm du lịch", "saveList": "Lưu", "saveListHint": "Lưu tối đa 30 danh sách trên thiết bị này. Nếu trùng tên, hệ thống sẽ hỏi xác nhận để ghi đè.", "savedListsEmpty": "Chưa có danh sách nào được lưu.", "loadList": "Tải", "deleteList": "Xóa", "listSaved": "Đã lưu “{name}”", "listUpdated": "Đã cập nhật “{name}”", "listLoaded": "Đã tải “{name}”", "listDeleted": "Đã xóa “{name}”", "listNameRequired": "Vui lòng nhập tên danh sách.", "listSourceRequired": "Vui lòng nhập các lựa chọn cần lưu.", "organize": "Sắp xếp", "trimLines": "Xóa khoảng trắng thừa", "removeBlank": "Xóa dòng trống", "removeDuplicates": "Xóa trùng lặp", "clear": "Xóa tất cả", "modePick": "Bốc thăm", "modeOrder": "Thứ tự", "modeTeams": "Chia nhóm", "modeWheel": "Vòng quay", "pickCount": "Số lượng cần chọn", "nextDraw": "Lượt chọn tiếp theo", "excludeSelected": "Loại trừ mục đã chọn", "excludeSelectedHint": "Không chọn lại những mục đã trúng ở lượt sau", "orderPresentation": "Khi hiển thị lớn", "oneByOne": "Hiện từng mục một", "showAll": "Hiện toàn bộ danh sách", "teamSplitMethod": "Cách chia nhóm", "splitByCount": "Theo số nhóm", "splitBySize": "Số người mỗi nhóm", "teamCount": "Số nhóm", "teamSize": "Số người mỗi nhóm", "teamPreview": "Kết quả chia nhóm", "teamSummaryCount": "{people} người → {teams} nhóm ({min}–{max} người/nhóm)", "teamSummarySize": "{people} người → {teams} nhóm (tối đa {size} người/nhóm)", "wheelDisplay": "Hiển thị", "openLargeWheel": "Mở vòng quay lớn", "distribution": "Phân bổ", "balancedTeams": "Cân bằng số lượng thành viên", "balancedTeamsHint": "Chênh lệch tối đa 1 người", "runPick": "Bốc thăm", "runOrder": "Xếp thứ tự", "runTeams": "Chia nhóm", "runWheel": "Quay vòng quay", "fairRandom": "Xác suất ngẫu nhiên đồng đều cho mỗi lựa chọn", "restorePool": "Khôi phục các mục đã loại trừ", "resultTitle": "Kết quả", "copy": "Sao chép", "copyPick": "Sao chép người trúng", "copyOrder": "Sao chép thứ tự", "copyOrderNumbered": "Sao chép kèm số thứ tự", "copyOrderPlain": "Chỉ sao chép tên", "copyTeams": "Sao chép các nhóm", "copyWheel": "Sao chép kết quả", "present": "Hiển thị lớn", "emptyResultTitle": "Nhập danh sách để bắt đầu", "emptyResultBody": "Mỗi dòng một lựa chọn. Các dòng trùng tên vẫn được tính là các lựa chọn riêng biệt.", "again": "Thực hiện lại", "share": "Chia sẻ", "historyTitle": "Lịch sử", "historyDesc": "Lưu tối đa 50 kết quả bốc thăm & quay số gần nhất cho danh sách này", "clearHistory": "Xóa lịch sử", "historyEmpty": "Chưa có kết quả bốc thăm nào.", "cancel": "Hủy", "clearCandidatesConfirmTitle": "Xóa toàn bộ lựa chọn?", "clearCandidatesConfirmBody": "Thao tác này sẽ xóa danh sách đang nhập cùng toàn bộ lịch sử bốc thăm và các mục đã loại trừ.", "clearCandidatesConfirmAction": "Xóa tất cả", "clearHistoryConfirmTitle": "Xóa lịch sử bốc thăm?", "clearHistoryConfirmBody": "Thao tác này sẽ xóa toàn bộ lịch sử quay số và bốc thăm của danh sách này. Danh sách các lựa chọn vẫn được giữ lại.", "clearHistoryConfirmAction": "Xóa lịch sử", "footer": "Công cụ bốc thăm, xếp thứ tự, chia nhóm và quay số ngẫu nhiên tất cả trong một", "helpBasicsTitle": "Thao tác cơ bản", "helpStep1": "Nhập hoặc dán mỗi lựa chọn trên một dòng. Khi dán từ bảng tính (nhiều cột), bạn có thể chọn cột muốn dùng. Các dòng trống sẽ tự động bỏ qua khi bốc thăm.", "helpStep2": "Chọn chế độ: Bốc thăm, Thứ tự, Chia nhóm hoặc Vòng quay, sau đó nhấn nút thực hiện.", "helpStep3": "Trong chế độ Bốc thăm, bật \"Loại trừ mục đã chọn\" để loại bỏ các mục đã trúng ở các lượt quay tiếp theo. Cài đặt này không ảnh hưởng đến chế độ Thứ tự, Chia nhóm hay Vòng quay.", "helpFairTitle": "Tính ngẫu nhiên & Công bằng", "helpFairBody": "Ứng dụng sử dụng chuẩn bảo mật crypto.getRandomValues() của trình duyệt để đảm bảo mọi lựa chọn có tỉ lệ trúng hoàn toàn ngang nhau. Các mục trùng tên trên nhiều dòng được tính là những lựa chọn độc lập.", "helpPrivacyTitle": "Quyền riêng tư & Bảo mật", "helpPrivacyBody": "Mọi danh sách lựa chọn, cài đặt và kết quả chỉ được xử lý nội bộ ngay trên trình duyệt của bạn, không gửi bất kỳ dữ liệu nào ra máy chủ bên ngoài. Danh sách hiện tại và cài đặt được tự động lưu trên thiết bị.", "helpNotesTitle": "Lưu ý khi sử dụng", "helpNoteEdit": "Khi bạn chỉnh sửa danh sách lựa chọn, trạng thái loại trừ và lịch sử bốc thăm sẽ được làm mới để phù hợp với danh sách mới.", "helpNoteStorage": "Nếu bạn xóa dữ liệu trang web trong trình duyệt, danh sách đang mở và các danh sách đã lưu có thể bị mất.", "helpNoteWheel": "Chế độ vòng quay hỗ trợ tối đa 200 lựa chọn để đảm bảo hiển thị đẹp mắt và mượt mà. Nếu danh sách dài hơn, vui lòng dùng chế độ Bốc thăm thông thường.", "helpNoteShare": "Tính năng chia sẻ nén danh sách vào đoạn URL fragment (sau dấu #), fragment này không gửi lên máy chủ. Trên trình duyệt không hỗ trợ Web Share API, nút chia sẻ sẽ tự động sao chép kết quả vào bộ nhớ tạm.", "duplicateHint": "{count} mục trùng lặp (vẫn được tính là các lựa chọn riêng biệt)", "blankHint": "Bỏ qua {count} dòng trống", "readyHint": "Đã sẵn sàng {count} lựa chọn", "noCandidates": "Vui lòng nhập ít nhất một lựa chọn.", "notEnough": "Không đủ số lượng lựa chọn còn lại. Hãy giảm số lượng cần chọn hoặc khôi phục các mục đã loại trừ.", "maxCandidates": "Hỗ trợ tối đa 10,000 lựa chọn.", "wheelLimit": "Vòng quay chỉ hỗ trợ tối đa 200 lựa chọn. Vui lòng chuyển sang chế độ Bốc thăm.", "resultKicker": "Đã được chọn", "selectedCount": "Đã chọn {count} mục", "orderedTitle": "Thứ tự ngẫu nhiên", "teamsTitle": "Đã chia thành {count} nhóm", "teamName": "Nhóm {index}", "wheelReady": "Nhấp hoặc chạm vào vòng quay để bắt đầu quay", "wheelSpinning": "Đang quay…", "copied": "Đã sao chép kết quả", "drawCompleteTitle": "Đã chọn hết tất cả các lựa chọn", "drawCompleteBody": "Bạn có thể khôi phục tất cả các mục đã loại trừ và bắt đầu một lượt mới với cùng danh sách.", "restoreAndAgain": "Khôi phục tất cả & bốc thăm lại", "previous": "Trước", "next": "Sau", "restartPresentation": "Bắt đầu lại", "orderPosition": "{current} / {total}", "presentationRank": "Hạng {index}", "teamMemberCount": "{count} người", "excelPasteTitle": "Phát hiện dữ liệu bảng", "excelPasteBody": "Dữ liệu dán vào có nhiều cột (từ Excel/Google Sheets). Bạn có thể chọn cột muốn dùng làm danh sách lựa chọn.", "excelColumn": "Cột {index}", "pasteAsIs": "Dán nguyên bản", "useSelectedColumn": "Dùng cột đã chọn", "pastedColumn": "Đã dán cột {index} làm danh sách lựa chọn", "copyFailed": "Không thể sao chép", "sharedFallback": "Trình duyệt không hỗ trợ chia sẻ trực tiếp, kết quả đã được sao chép vào bộ nhớ tạm", "candidateLinkCopied": "Đã sao chép liên kết chia sẻ danh sách", "candidateLinkShared": "Đã tạo liên kết chia sẻ danh sách", "candidateShareLocalDisabled": "Không hỗ trợ chia sẻ liên kết khi mở tệp cục bộ (file://). Vui lòng mở trên máy chủ web.", "candidateShareUnsupported": "Trình duyệt này không hỗ trợ tạo liên kết chia sẻ.", "candidateShareInvalid": "Không thể mở liên kết chia sẻ.", "candidateShareLoaded": "Đã tải {count} lựa chọn từ liên kết chia sẻ", "restoredPool": "Đã khôi phục toàn bộ lựa chọn đã loại trừ", "clearedHistory": "Đã xóa lịch sử", "clearedCandidates": "Đã xóa toàn bộ lựa chọn", "cleaned": "Đã dọn dẹp danh sách lựa chọn", "duplicatesRemoved": "Đã xóa các mục trùng lặp", "sampleLoaded": "Đã nạp danh sách mẫu", "undo": "Hoàn tác", "undone": "Đã hoàn tác", "savedLocally": "Đã lưu danh sách và cài đặt trên thiết bị", "presentationPick": "Kết quả bốc thăm", "presentationWheel": "Kết quả vòng quay", "presentationOrder": "Kết quả xếp thứ tự", "presentationTeams": "Kết quả chia nhóm", "presentationSub": "SpinOption", "historySingle": "{name}", "historyMultiple": "{count} mục: {names}", "sampleValues": "Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt\nSa Pa\nHạ Long\nPhú Quốc\nHội An\nNinh Bình\nMộc Châu" },
         ja: {
           duplicateList: '複製', listCopySuffix: '（コピー）', listCopyNumberSuffix: '（コピー {number}）', listDuplicated: '「{name}」を複製しました', renameList: '名前を変更', saveName: '名前を保存', searchLists: '名前で検索', savedListCount: '{matched}件表示 · {total} / {max}件保存', noMatchingLists: '一致する保存リストはありません。', listLimitReached: '保存は最大{max}件です。既存リストを削除するか、同じ名前で更新してください。', listNameDuplicate: '同じ名前のリストがあります。別の名前を入力してください。', listRenamed: '「{name}」に名前を変更しました', replaceList: '候補を置き換える', replaceListQuestion: '「{name}」の保存済み候補を現在の候補で置き換えますか？', listStorageFailed: '変更を保存できませんでした。以前の保存リストは保持されています。ブラウザーの保存設定や空き容量を確認して再試行してください。', helpSavedLists: '保存リストは最大30件。名前で検索・複製・名前変更ができます。「複製」はその行の保存済み候補を空行・重複も含めて別名でコピーし、現在の抽選を変えません。成功すると検索を解除して複製を表示します。31件目は保存せず、既存リストを保持します。同じ名前の候補置き換えには確認が必要です。直前の複製・置き換え・名前変更・削除は画面内の「元に戻す」で戻せます。名前が変わらない保存では直前の「元に戻す」を保持します。保存に失敗した変更は反映しません。', helpShortcut: 'Ctrl / Cmd + Enter で抽選します（候補入力欄でも使えます）。ダイアログ内や他の入力欄、キー長押し・日本語変換中には実行しません。',
           brandMeta: '抽選・順番・チーム・ルーレット', switchLanguage: '英語に切り替え', helpTitle: '使い方と注意事項', close: '閉じる',
@@ -862,7 +1183,7 @@
           resultKicker: '選ばれました', selectedCount: '{count}件を選びました', orderedTitle: 'ランダムな順番', teamsTitle: '{count}チームに分けました', teamName: 'チーム {index}', wheelReady: 'タップしてルーレットを回せます', wheelSpinning: '抽選中…',
           copied: '結果をコピーしました', drawCompleteTitle: '全員を選び終わりました', drawCompleteBody: '除外した候補を戻して、同じリストでもう一度始められます。', restoreAndAgain: '全員戻してもう一度', previous: '前へ', next: '次へ', restartPresentation: '最初から', orderPosition: '{current} / {total}', presentationRank: '{index}番', teamMemberCount: '{count}人', excelPasteTitle: '表の貼り付けを検出しました', excelPasteBody: 'Excelなどの複数列データです。候補に使う列を選べます。', excelColumn: '列 {index}', pasteAsIs: 'そのまま貼り付け', useSelectedColumn: '選んだ列を使う', pastedColumn: '列 {index} を候補として貼り付けました', copyFailed: 'コピーできませんでした', sharedFallback: '共有機能がないため結果をコピーしました', candidateLinkCopied: '候補の共有リンクをコピーしました', candidateLinkShared: '候補の共有リンクを作成しました', candidateShareLocalDisabled: 'ローカルファイルでは候補共有を利用できません。Webサーバー上で開いてください。', candidateShareUnsupported: 'このブラウザーでは候補リンクを作成できません。', candidateShareInvalid: '共有リンクを読み込めませんでした。', candidateShareLoaded: '{count}件の共有候補を読み込みました', restoredPool: '除外した候補をすべて戻しました', clearedHistory: '履歴を消去しました', clearedCandidates: '候補を消去しました', cleaned: '候補を整理しました', duplicatesRemoved: '重複を削除しました', sampleLoaded: 'サンプルを読み込みました', undo: '元に戻す', undone: '元に戻しました', savedLocally: '候補と設定を端末内に保存',
           presentationPick: '抽選結果', presentationWheel: 'ルーレット結果', presentationOrder: '順番決めの結果', presentationTeams: 'チーム分けの結果', presentationSub: 'Random Picker', historySingle: '{name}', historyMultiple: '{count}件: {names}',
-          sampleValues: 'ラーメン\nカレー\n寿司\n焼肉\nそば\nうどん'
+          sampleValues: 'Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt\nSa Pa\nHạ Long\nPhú Quốc\nHội An\nNinh Bình\nMộc Châu'
         },
         en: {
           duplicateList: 'Duplicate', listCopySuffix: ' (copy)', listCopyNumberSuffix: ' (copy {number})', listDuplicated: 'Duplicated as “{name}”', renameList: 'Rename', saveName: 'Save name', searchLists: 'Search by name', savedListCount: '{matched} shown · {total} / {max} saved', noMatchingLists: 'No saved lists match this search.', listLimitReached: 'You can save up to {max} lists. Delete a list or update a matching name first.', listNameDuplicate: 'A list with this name already exists. Choose another name.', listRenamed: 'Renamed to “{name}”', replaceList: 'Replace candidates', replaceListQuestion: 'Replace the saved candidates in “{name}” with the current candidates?', listStorageFailed: 'Could not save changes. Your previous saved lists are unchanged. Check browser storage settings or free space and try again.', helpSavedLists: 'Save up to 30 lists, search, duplicate, or rename them. Duplicate copies that row’s stored candidates, including blank lines and duplicate labels, under a new name without changing the current draw. Success clears the search to reveal the copy. A 31st list is rejected without removing existing lists. Replacing candidates under a matching name asks for confirmation. Undo the latest duplicate, replacement, rename, or deletion inside Saved lists. Saving an unchanged name keeps the previous Undo. Changes that fail to save are not applied.', helpShortcut: 'Ctrl / Cmd + Enter runs the current mode, including from the candidate input. It does not run inside dialogs, other input fields, while holding the key, or during IME composition.',
@@ -882,7 +1203,7 @@
           resultKicker: 'Selected', selectedCount: '{count} items selected', orderedTitle: 'Random order', teamsTitle: 'Split into {count} teams', teamName: 'Team {index}', wheelReady: 'Spin the wheel to pick one', wheelSpinning: 'Picking…',
           copied: 'Result copied', drawCompleteTitle: 'Everyone has been selected', drawCompleteBody: 'Restore all removed candidates and start another round with the same list.', restoreAndAgain: 'Restore all & pick again', previous: 'Previous', next: 'Next', restartPresentation: 'Start over', orderPosition: '{current} / {total}', presentationRank: '#{index}', teamMemberCount: '{count} people', excelPasteTitle: 'Table paste detected', excelPasteBody: 'This looks like multi-column data from Excel or another spreadsheet. Choose the column to use as candidates.', excelColumn: 'Column {index}', pasteAsIs: 'Paste as-is', useSelectedColumn: 'Use selected column', pastedColumn: 'Pasted column {index} as candidates', copyFailed: 'Could not copy', sharedFallback: 'Sharing is unavailable, so the result was copied', candidateLinkCopied: 'Candidate share link copied', candidateLinkShared: 'Candidate share link created', candidateShareLocalDisabled: 'Candidate sharing is disabled for local files. Open the app from a web server to use it.', candidateShareUnsupported: 'This browser cannot create candidate share links.', candidateShareInvalid: 'Could not load the candidate share link.', candidateShareLoaded: 'Loaded {count} shared candidates', restoredPool: 'All removed candidates restored', clearedHistory: 'History cleared', clearedCandidates: 'Candidates cleared', cleaned: 'Candidates cleaned up', duplicatesRemoved: 'Duplicates removed', sampleLoaded: 'Sample loaded', undo: 'Undo', undone: 'Restored', savedLocally: 'List and settings saved locally',
           presentationPick: 'Draw result', presentationWheel: 'Wheel result', presentationOrder: 'Random order result', presentationTeams: 'Team result', presentationSub: 'Random Picker', historySingle: '{name}', historyMultiple: '{count} items: {names}',
-          sampleValues: 'Ramen\nCurry\nSushi\nBBQ\nSoba\nUdon'
+          sampleValues: 'Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt\nSa Pa\nHạ Long\nPhú Quốc\nHội An\nNinh Bình\nMộc Châu'
         }
       };
 
@@ -895,12 +1216,12 @@
       const SHARE_FRAGMENT_KEY = 'candidates';
       const SHARE_SCHEMA_VERSION = 1;
       const state = {
-        language: 'ja', mode: 'pick', source: '', pickCount: 1, teamCount: 2, teamSize: 4, teamSplit: 'count', orderPresentation: 'one', excludeSelected: false,
+        language: 'vi', mode: 'pick', source: '', pickCount: 1, teamCount: 2, teamSize: 4, teamSplit: 'count', orderPresentation: 'one', excludeSelected: false,
         excluded: new Set(), history: [], result: null, wheelRotation: 0, isSpinning: false, wheelSpinToken: 0, savedLists: [], presentationOrderIndex: 0
       };
 
       function t(key, values = {}) {
-        let text = translations[state.language]?.[key] ?? translations.ja[key] ?? key;
+        let text = translations[state.language]?.[key] ?? translations.vi[key] ?? translations.en[key] ?? key;
         for (const [name, value] of Object.entries(values)) text = text.replaceAll(`{${name}}`, String(value));
         return text;
       }
@@ -976,9 +1297,9 @@
       function makeId() { try { return crypto.randomUUID(); } catch { return `${Date.now()}-${secureRandomInt(1000000)}`; } }
 
       function chooseLanguage() {
-        const saved = safeStorageGet(languageKey); if (saved === 'ja' || saved === 'en') return saved;
-        if (APP_CONFIG.defaultLanguage === 'ja' || APP_CONFIG.defaultLanguage === 'en') return APP_CONFIG.defaultLanguage;
-        return (navigator.language || '').toLowerCase().startsWith('ja') ? 'ja' : 'en';
+        const saved = safeStorageGet(languageKey); if (saved === 'vi' || saved === 'en' || saved === 'ja') return saved;
+        if (APP_CONFIG.defaultLanguage === 'vi' || APP_CONFIG.defaultLanguage === 'en' || APP_CONFIG.defaultLanguage === 'ja') return APP_CONFIG.defaultLanguage;
+        return 'vi';
       }
       function normalizeInt(value,min,max,fallback) { const number = Number.parseInt(value,10); if (!Number.isFinite(number)) return fallback; return Math.min(max,Math.max(min,number)); }
 
@@ -1101,10 +1422,12 @@
         $$('[data-i18n-placeholder]').forEach(element => { element.placeholder = t(element.dataset.i18nPlaceholder); });
         $$('[data-i18n-title]').forEach(element => { element.title = t(element.dataset.i18nTitle); });
         $$('[data-i18n-aria-label]').forEach(element => { element.setAttribute('aria-label',t(element.dataset.i18nAriaLabel)); });
-        $('#languageButton').textContent = language === 'ja' ? 'EN' : 'JA';
-        $('#brandName').textContent = language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
-        $('#footerName').textContent = language === 'ja' ? APP_CONFIG.nameJa : APP_CONFIG.name;
-        document.title = language === 'ja' ? `${APP_CONFIG.nameJa} | Random Picker` : APP_CONFIG.name;
+        $('#languageButton').textContent = language === 'vi' ? 'EN' : 'VI';
+        $('#languageButton').setAttribute('aria-label', language === 'vi' ? t('switchLanguage') : 'Chuyển sang tiếng Việt');
+        $('#languageButton').title = language === 'vi' ? t('switchLanguage') : 'Chuyển sang tiếng Việt';
+        $('#brandName').textContent = APP_CONFIG.name || 'SpinOption';
+        $('#footerName').textContent = APP_CONFIG.name || 'SpinOption';
+        document.title = language === 'vi' ? `${APP_CONFIG.name || 'SpinOption'} | Vòng Quay & Bốc Thăm Ngẫu Nhiên` : `${APP_CONFIG.name || 'SpinOption'} | Random Picker`;
         updateCandidateStats(); updateModeUI(); renderResult(); renderHistory(); if ($('#savedListsDialog').open) renderSavedLists();
       }
 
@@ -1589,11 +1912,430 @@
         setSource(after); AppPopoverMenu.closeAll(); AppToast.show({message:t(type==='duplicates'?'duplicatesRemoved':'cleaned'),actionLabel:t('undo'),onAction:() => { setSource(before); AppToast.show({message:t('undone'),tone:'success'}); },tone:'success'});
       }
 
+
+      // --- Multi-Board Manager (1 to 5 boards) ---
+      const DEFAULT_BOARD_PRESETS = [
+        {
+          title: 'Địa điểm du lịch',
+          source: 'Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt\nSa Pa\nHạ Long\nPhú Quốc\nHội An\nNinh Bình\nMộc Châu'
+        },
+        {
+          title: 'Ăn gì hôm nay',
+          source: 'Phở bò\nBún chả\nBánh mì\nLẩu riêu cua\nNướng BBQ\nCơm tấm\nBún đậu mắm tôm\nGỏi cuốn'
+        },
+        {
+          title: 'Ai trả tiền',
+          source: 'Bạn A\nBạn B\nBạn C\nBạn D\nChia đều (Campuchia)'
+        },
+        {
+          title: 'Phương tiện đi lại',
+          source: 'Xe máy phượt\nÔ tô riêng\nXe khách limousine\nTàu hỏa ngắm cảnh\nMáy bay'
+        },
+        {
+          title: 'Hoạt động trải nghiệm',
+          source: 'Cắm trại qua đêm\nĐi trekking ngắm cảnh\nCheck-in sống ảo\nThưởng thức đặc sản\nĐốt lửa trại\nHát hò karaoke'
+        }
+      ];
+
+      const multiBoardState = {
+        count: 1,
+        boards: Array.from({ length: 5 }, (_, idx) => ({
+          id: idx + 1,
+          title: DEFAULT_BOARD_PRESETS[idx].title,
+          source: DEFAULT_BOARD_PRESETS[idx].source,
+          mode: 'wheel',
+          result: null,
+          isSpinning: false,
+          wheelRotation: 0
+        }))
+      };
+
+      function updateBoardCount(newCount) {
+        multiBoardState.count = normalizeInt(newCount, 1, 5, 1);
+        $$('#boardCountControl .segmented-button').forEach(btn => {
+          btn.setAttribute('aria-pressed', String(Number(btn.dataset.boardCount) === multiBoardState.count));
+        });
+
+        const singleGrid = $('.workspace-grid');
+        const multiContainer = $('#multiBoardContainer');
+        const runAllBtn = $('#runAllBoardsButton');
+
+        if (multiBoardState.count === 1) {
+          if (singleGrid) singleGrid.hidden = false;
+          if (multiContainer) multiContainer.hidden = true;
+          if (runAllBtn) runAllBtn.hidden = true;
+          // Synchronize board 1 state with primary state
+          if (multiBoardState.boards[0].source && state.source !== multiBoardState.boards[0].source) {
+            setSource(multiBoardState.boards[0].source, { reset: false });
+          }
+        } else {
+          if (singleGrid) singleGrid.hidden = true;
+          if (multiContainer) multiContainer.hidden = false;
+          if (runAllBtn) runAllBtn.hidden = false;
+          // Keep board 1 source synced from current input if user edited it
+          if (state.source) {
+            multiBoardState.boards[0].source = state.source;
+          }
+          renderMultiBoards();
+        }
+      }
+
+      function renderMultiBoards() {
+        const container = $('#multiBoardContainer');
+        if (!container) return;
+        container.innerHTML = '';
+
+        for (let i = 0; i < multiBoardState.count; i++) {
+          const board = multiBoardState.boards[i];
+          const card = document.createElement('div');
+          card.className = 'board-card';
+          card.id = `boardCard-${board.id}`;
+
+          // Header with customizable title and mode buttons
+          const header = document.createElement('div');
+          header.className = 'board-card-header';
+
+          const titleWrap = document.createElement('div');
+          titleWrap.className = 'board-card-title-wrap';
+          const badge = document.createElement('span');
+          badge.className = 'board-badge';
+          badge.textContent = String(board.id);
+          const titleInput = document.createElement('input');
+          titleInput.className = 'board-card-title-input';
+          titleInput.value = board.title;
+          titleInput.placeholder = `Bảng ${board.id}`;
+          titleInput.addEventListener('input', e => {
+            board.title = e.target.value;
+          });
+          titleWrap.append(badge, titleInput);
+
+          const modes = document.createElement('div');
+          modes.className = 'board-card-modes';
+          const modeOptions = [
+            { mode: 'wheel', label: 'Vòng quay' },
+            { mode: 'pick', label: 'Bốc thăm' },
+            { mode: 'order', label: 'Thứ tự' }
+          ];
+          modeOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'board-card-mode-btn';
+            btn.textContent = opt.label;
+            btn.setAttribute('aria-selected', String(board.mode === opt.mode));
+            btn.addEventListener('click', () => {
+              board.mode = opt.mode;
+              board.result = null;
+              renderMultiBoardCard(board.id);
+            });
+            modes.appendChild(btn);
+          });
+          header.append(titleWrap, modes);
+
+          // Candidate Textarea
+          const textWrap = document.createElement('div');
+          textWrap.className = 'board-textarea-wrap';
+          const textarea = document.createElement('textarea');
+          textarea.className = 'board-card-textarea';
+          textarea.spellcheck = false;
+          textarea.value = board.source;
+          textarea.placeholder = 'Mỗi dòng một lựa chọn...';
+          textarea.addEventListener('input', e => {
+            board.source = e.target.value;
+            if (board.id === 1) state.source = board.source;
+            updateMultiBoardStats(board.id);
+            if (board.mode === 'wheel') drawBoardWheel(board.id);
+          });
+
+          // Bar with stats and Sample button
+          const bar = document.createElement('div');
+          bar.className = 'board-card-bar';
+          const stats = document.createElement('span');
+          stats.className = 'board-card-stats';
+          stats.id = `boardStats-${board.id}`;
+
+          const sampleBtn = document.createElement('button');
+          sampleBtn.type = 'button';
+          sampleBtn.className = 'board-card-btn-sample';
+          sampleBtn.textContent = 'Mẫu';
+          sampleBtn.addEventListener('click', () => {
+            const preset = DEFAULT_BOARD_PRESETS[board.id - 1] || DEFAULT_BOARD_PRESETS[0];
+            board.source = preset.source;
+            textarea.value = board.source;
+            if (board.id === 1) state.source = board.source;
+            updateMultiBoardStats(board.id);
+            if (board.mode === 'wheel') drawBoardWheel(board.id);
+          });
+          bar.append(stats, sampleBtn);
+          textWrap.append(textarea, bar);
+
+          // Action button
+          const actionBtn = document.createElement('button');
+          actionBtn.type = 'button';
+          actionBtn.className = 'board-card-action-btn';
+          actionBtn.id = `boardActionBtn-${board.id}`;
+          actionBtn.innerHTML = getBoardActionLabel(board);
+          actionBtn.addEventListener('click', () => {
+            runSingleBoard(board.id);
+          });
+
+          // Stage (result or wheel)
+          const stage = document.createElement('div');
+          stage.className = 'board-card-stage';
+          stage.id = `boardStage-${board.id}`;
+
+          card.append(header, textWrap, actionBtn, stage);
+          container.appendChild(card);
+
+          updateMultiBoardStats(board.id);
+          renderBoardStage(board.id);
+        }
+      }
+
+      function getBoardActionLabel(board) {
+        if (board.mode === 'wheel') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="1.5"/></svg> <span>Quay vòng quay</span>';
+        if (board.mode === 'order') return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M8 6h11M8 12h11M8 18h11"/></svg> <span>Xếp thứ tự</span>';
+        return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M5 7h4l7 10h3"/><path d="m16 5 3 2-3 2M5 17h4l2-3"/></svg> <span>Bốc thăm</span>';
+      }
+
+      function parseBoardCandidates(source) {
+        return source.replace(/\r\n?/g, '\n')
+          .split('\n')
+          .map(line => line.trim())
+          .filter(Boolean);
+      }
+
+      function updateMultiBoardStats(boardId) {
+        const board = multiBoardState.boards[boardId - 1];
+        if (!board) return;
+        const items = parseBoardCandidates(board.source);
+        const statsEl = $(`#boardStats-${boardId}`);
+        if (statsEl) statsEl.textContent = `${items.length} lựa chọn`;
+        const actionBtn = $(`#boardActionBtn-${boardId}`);
+        if (actionBtn) actionBtn.disabled = items.length === 0 || board.isSpinning;
+      }
+
+      function renderMultiBoardCard(boardId) {
+        const board = multiBoardState.boards[boardId - 1];
+        if (!board) return;
+        const card = $(`#boardCard-${boardId}`);
+        if (!card) return;
+        card.querySelectorAll('.board-card-mode-btn').forEach(btn => {
+          btn.setAttribute('aria-selected', String(btn.textContent.includes(board.mode === 'wheel' ? 'Quay' : board.mode === 'pick' ? 'Bốc' : 'Thứ')));
+        });
+        const actionBtn = $(`#boardActionBtn-${boardId}`);
+        if (actionBtn) actionBtn.innerHTML = getBoardActionLabel(board);
+        renderBoardStage(boardId);
+        updateMultiBoardStats(boardId);
+      }
+
+      function renderBoardStage(boardId) {
+        const board = multiBoardState.boards[boardId - 1];
+        if (!board) return;
+        const stage = $(`#boardStage-${boardId}`);
+        if (!stage) return;
+        stage.innerHTML = '';
+
+        const candidates = parseBoardCandidates(board.source);
+        if (!candidates.length) {
+          stage.innerHTML = '<span style="color:var(--muted);font-size:13px">Nhập lựa chọn để bắt đầu</span>';
+          return;
+        }
+
+        if (board.mode === 'wheel') {
+          const canvas = document.createElement('canvas');
+          canvas.className = 'board-card-wheel-canvas';
+          canvas.width = 320;
+          canvas.height = 320;
+          canvas.id = `boardWheelCanvas-${boardId}`;
+          canvas.title = 'Nhấp để quay';
+          canvas.addEventListener('click', () => runSingleBoard(boardId));
+
+          const resultLabel = document.createElement('div');
+          resultLabel.className = 'board-card-winner';
+          resultLabel.id = `boardWinner-${boardId}`;
+          if (board.result) {
+            resultLabel.textContent = board.result;
+          }
+
+          stage.append(canvas, resultLabel);
+          drawBoardWheel(boardId);
+        } else if (board.mode === 'order') {
+          if (!board.result || !Array.isArray(board.result)) {
+            stage.innerHTML = '<span style="color:var(--muted);font-size:13px">Nhấn "Xếp thứ tự" để tạo danh sách ngẫu nhiên</span>';
+          } else {
+            const list = document.createElement('div');
+            list.className = 'board-card-order-list';
+            board.result.forEach((item, idx) => {
+              const row = document.createElement('div');
+              row.className = 'board-card-order-item';
+              row.innerHTML = `<span class="board-card-order-num">#${idx + 1}</span> <span>${item}</span>`;
+              list.appendChild(row);
+            });
+            stage.appendChild(list);
+          }
+        } else {
+          // Pick mode
+          if (!board.result) {
+            stage.innerHTML = '<span style="color:var(--muted);font-size:13px">Nhấn "Bốc thăm" để chọn ngẫu nhiên</span>';
+          } else {
+            const wrap = document.createElement('div');
+            wrap.style.textAlign = 'center';
+            wrap.innerHTML = `<span style="font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase">Đã chọn</span><div class="board-card-winner">${board.result}</div>`;
+            stage.appendChild(wrap);
+          }
+        }
+      }
+
+      function drawBoardWheel(boardId) {
+        const board = multiBoardState.boards[boardId - 1];
+        if (!board) return;
+        const canvas = $(`#boardWheelCanvas-${boardId}`);
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const size = canvas.width;
+        const center = size / 2;
+        const radius = center - 12;
+
+        ctx.clearRect(0, 0, size, size);
+        const items = parseBoardCandidates(board.source);
+        if (!items.length) return;
+
+        const count = items.length;
+        const step = (Math.PI * 2) / count;
+        const rotation = board.wheelRotation || 0;
+
+        const colors = [
+          '#16624f', '#248268', '#349b7e', '#4bb295', '#6dcab1',
+          '#b58434', '#c9963e', '#dfaa4d', '#285e8e', '#3c7db8'
+        ];
+
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(rotation);
+
+        for (let i = 0; i < count; i++) {
+          const angle = i * step;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, radius, angle, angle + step);
+          ctx.closePath();
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.fill();
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          // Slice label
+          ctx.save();
+          ctx.rotate(angle + step / 2);
+          ctx.textAlign = 'right';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px system-ui, sans-serif';
+          const text = items[i].length > 12 ? items[i].slice(0, 11) + '…' : items[i];
+          ctx.fillText(text, radius - 14, 4);
+          ctx.restore();
+        }
+
+        ctx.restore();
+
+        // Center hub
+        ctx.beginPath();
+        ctx.arc(center, center, 14, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.strokeStyle = '# dadbd6';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Pointer at right edge (3 o'clock)
+        ctx.beginPath();
+        ctx.moveTo(size - 4, center);
+        ctx.lineTo(size - 18, center - 9);
+        ctx.lineTo(size - 18, center + 9);
+        ctx.closePath();
+        ctx.fillStyle = '#b3261e';
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+
+      function runSingleBoard(boardId) {
+        const board = multiBoardState.boards[boardId - 1];
+        if (!board || board.isSpinning) return;
+        const items = parseBoardCandidates(board.source);
+        if (!items.length) return;
+
+        if (board.mode === 'wheel') {
+          board.isSpinning = true;
+          updateMultiBoardStats(boardId);
+          const winnerIndex = secureRandomInt(items.length);
+          const winner = items[winnerIndex];
+          const count = items.length;
+          const sliceAngle = (Math.PI * 2) / count;
+          // Target angle to line up winner at pointer (0 rad = 3 o'clock)
+          const targetSliceAngle = (Math.PI * 2) - (winnerIndex * sliceAngle + sliceAngle / 2);
+          const currentNorm = board.wheelRotation % (Math.PI * 2);
+          const fullSpins = (5 + secureRandomInt(3)) * Math.PI * 2;
+          const finalRotation = board.wheelRotation + fullSpins + ((targetSliceAngle - currentNorm + Math.PI * 4) % (Math.PI * 2));
+
+          const startTime = performance.now();
+          const duration = 2800 + secureRandomInt(600);
+          const startRotation = board.wheelRotation;
+
+          function animate(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(1, elapsed / duration);
+            // Ease out cubic
+            const ease = 1 - Math.pow(1 - progress, 3);
+            board.wheelRotation = startRotation + (finalRotation - startRotation) * ease;
+            drawBoardWheel(boardId);
+
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              board.isSpinning = false;
+              board.wheelRotation = finalRotation;
+              board.result = winner;
+              drawBoardWheel(boardId);
+              const winnerEl = $(`#boardWinner-${boardId}`);
+              if (winnerEl) winnerEl.textContent = winner;
+              updateMultiBoardStats(boardId);
+              burstConfetti();
+            }
+          }
+          requestAnimationFrame(animate);
+        } else if (board.mode === 'order') {
+          const ordered = secureShuffle(items);
+          board.result = ordered;
+          renderBoardStage(boardId);
+          burstConfetti();
+        } else {
+          // Pick
+          const picked = items[secureRandomInt(items.length)];
+          board.result = picked;
+          renderBoardStage(boardId);
+          burstConfetti();
+        }
+      }
+
+      function runAllBoards() {
+        for (let i = 1; i <= multiBoardState.count; i++) {
+          runSingleBoard(i);
+        }
+      }
+
       function setupEvents() {
         $('#candidateInput').addEventListener('input', event => { state.source = event.target.value; resetSession({ persist:false }); scheduleSave(); });
         $('#candidateInput').addEventListener('paste', event => { const text=event.clipboardData?.getData('text/plain') || ''; if(!text.includes('\t')) return; const input=event.currentTarget; if(openExcelPaste(text,input.selectionStart,input.selectionEnd)) event.preventDefault(); });
         $('#candidateInput').addEventListener('blur', saveState);
-        $('#languageButton').addEventListener('click', () => setLanguage(state.language === 'ja' ? 'en' : 'ja'));
+
+        $('#boardCountControl')?.addEventListener?.('click', event => {
+          const btn = event.target?.closest?.('[data-board-count]');
+          if (btn) updateBoardCount(Number(btn.dataset.boardCount));
+        });
+        $('#runAllBoardsButton')?.addEventListener?.('click', runAllBoards);
+        $('#languageButton').addEventListener('click', () => setLanguage(state.language === 'vi' ? 'en' : 'vi'));
         $$('.mode-button').forEach(button => button.addEventListener('click', () => { state.mode = button.dataset.mode; state.result = null; state.isSpinning = false; state.wheelSpinToken += 1; saveState(); updateModeUI(); renderResult(); }));
         $('#pickCount').addEventListener('change', event => { state.pickCount = normalizeInt(event.target.value,1,1000,1); event.target.value = state.pickCount; saveState(); });
         $('#teamCount').addEventListener('change', event => { state.teamCount = normalizeInt(event.target.value,2,50,2); event.target.value = state.teamCount; saveState(); updateTeamSummary(); });

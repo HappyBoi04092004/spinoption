@@ -26,7 +26,7 @@ function headerFixture() {
   return { ...app, translated };
 }
 
-for (const [language, text, target] of [['en', 'JA', 'Switch to Japanese'], ['ja', 'EN', '英語に切り替え']]) {
+for (const [language, text, target] of [['en', 'VI', 'Chuyển sang tiếng Việt'], ['vi', 'EN', 'Chuyển sang tiếng Anh']]) {
   test(`${language} language control names its target in aria and title`, () => {
     const app = headerFixture();
     app.api.setLanguage(language);
@@ -39,7 +39,7 @@ for (const [language, text, target] of [['en', 'JA', 'Switch to Japanese'], ['ja
   test(`${language} Help and Close retain localized accessible names and titles`, () => {
     const app = headerFixture();
     app.api.setLanguage(language);
-    for (const [id, expected] of [['helpButton', language === 'ja' ? '使い方と注意事項' : 'How to use & notes'], ['helpCloseButton', language === 'ja' ? '閉じる' : 'Close']]) {
+    for (const [id, expected] of [['helpButton', language === 'vi' ? 'Hướng dẫn & Lưu ý' : 'How to use & notes'], ['helpCloseButton', language === 'vi' ? 'Đóng' : 'Close']]) {
       assert.equal(app.get('#' + id).getAttribute('aria-label'), expected);
       assert.equal(app.get('#' + id).title, expected);
     }
@@ -48,14 +48,14 @@ for (const [language, text, target] of [['en', 'JA', 'Switch to Japanese'], ['ja
 
 test('repeated language clicks persist the language and preserve the active candidate source', () => {
   const app = headerFixture();
-  app.api.state.source = 'Alice\n\n同じ\n同じ';
-  app.api.setLanguage('ja');
-  for (const language of ['en', 'ja', 'en', 'ja']) {
+  app.api.state.source = 'Alice\n\nBa Vì\nBa Vì';
+  app.api.setLanguage('vi');
+  for (const language of ['en', 'vi', 'en', 'vi']) {
     app.get('#languageButton').dispatch('click');
     assert.equal(app.api.state.language, language);
-    assert.equal(app.get('#languageButton').textContent, language === 'ja' ? 'EN' : 'JA');
+    assert.equal(app.get('#languageButton').textContent, language === 'vi' ? 'EN' : 'VI');
     assert.equal(app.stored.get('htmlapps-random-picker:language'), language);
-    assert.equal(app.api.state.source, 'Alice\n\n同じ\n同じ');
+    assert.equal(app.api.state.source, 'Alice\n\nBa Vì\nBa Vì');
   }
   app.get('#helpButton').dispatch('click');
   assert.equal(app.get('#helpDialog').open, true);
@@ -68,7 +68,7 @@ test('local-processing badge is present and follows repeated language switches',
   const app = headerFixture();
   const badgeLabels = app.translated.filter(element => element.dataset.i18n === 'localBadge');
   assert.equal(badgeLabels.length, 1, 'one visible badge label is bound to translation');
-  for (const [language, expected] of [['ja', '完全ローカル処理'], ['en', 'Fully local processing'], ['ja', '完全ローカル処理']]) {
+  for (const [language, expected] of [['vi', 'Xử lý 100% trên thiết bị'], ['en', 'Fully local processing'], ['vi', 'Xử lý 100% trên thiết bị']]) {
     app.api.setLanguage(language);
     assert.equal(badgeLabels[0].textContent, expected);
   }

@@ -46,6 +46,7 @@
     "defaultLanguage": {
       "enum": [
         "auto",
+        "vi",
         "ja",
         "en"
       ]

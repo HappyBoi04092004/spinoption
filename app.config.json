@@ -6,10 +6,10 @@
   "version": "1.0.4",
   "description": "A random picker for draws, ordering, team making, and wheel spins.",
   "descriptionJa": "抽選・順番決め・チーム分け・ルーレットをすぐ使えるランダムピッカーです。",
-  "defaultLanguage": "auto",
+  "defaultLanguage": "vi",
   "repository": {
-    "owner": "ttomohisa",
-    "name": "htmlapps-random-picker"
+    "owner": "HappyBoi04092004",
+    "name": "SpinOption"
   },
   "build": {
     "output": "dist/index.html",
