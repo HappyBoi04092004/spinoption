@@ -1,0 +1,24 @@
+{
+  "name": "spin-option",
+  "version": "1.1.0",
+  "description": "Vòng quay & Bốc thăm ngẫu nhiên - Frontend & Backend Architecture",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "test": "node tests/api.test.js"
+  },
+  "keywords": [
+    "random-picker",
+    "spin-wheel",
+    "lucky-draw",
+    "express",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

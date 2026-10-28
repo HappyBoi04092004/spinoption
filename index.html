@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="color-scheme" content="light">
   <meta name="theme-color" content="#f5f5f2">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; media-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'none'; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data: blob:; media-src 'self' data: blob:; worker-src 'self' blob:; connect-src 'self' data: blob:; object-src 'none'; frame-src 'none'; base-uri 'none'; form-action 'none'">
   <title>SpinOption - Vòng Quay & Bốc Thăm Ngẫu Nhiên</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2316624f'/%3E%3Cpath d='M18 20h18M18 32h12M18 44h16' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='44' cy='32' r='9' fill='none' stroke='white' stroke-width='4'/%3E%3Cpath d='m41 32 2 2 5-6' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <style>
@@ -142,6 +142,32 @@
       font-style: italic;
       font-weight: normal;
       font-size: 14px;
+    }
+
+    
+    .api-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface-warm);
+      border: 1px solid var(--line);
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--muted);
+      transition: all .2s ease;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px rgba(16, 185, 129, .6);
+    }
+    .status-dot.offline {
+      background: #f59e0b;
+      box-shadow: 0 0 6px rgba(245, 158, 11, .6);
     }
 
     /* Multi-board selector and grid styles */
@@ -1127,6 +1153,10 @@
         </div>
       </div>
       <div class="header-actions">
+        <div class="api-status-badge" id="apiStatusBadge" title="Trạng thái kết nối máy chủ">
+          <span class="status-dot online" id="apiStatusDot"></span>
+          <span class="status-text" id="apiStatusText">BE Online</span>
+        </div>
         <button class="language-button" id="languageButton" type="button" data-i18n-title="switchLanguage" data-i18n-aria-label="switchLanguage" title="Chuyển sang tiếng Anh" aria-label="Chuyển sang tiếng Anh">EN</button>
         <button class="header-icon-button" id="helpButton" type="button" data-i18n-title="helpTitle" data-i18n-aria-label="helpTitle" title="Hướng dẫn & Lưu ý" aria-label="Hướng dẫn & Lưu ý">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.35 2.35 0 1 1 3.72 1.9c-.92.67-1.52 1.12-1.52 2.1"/><path d="M12 17h.01"/></svg>
@@ -1518,13 +1548,22 @@
     </div>
   </dialog>
 
+  <script src="js/api.js"></script>
   <script>
     (() => {
       'use strict';
 
-      const APP_CONFIG = __APP_CONFIG_JSON__;
-      const BUILD_MANIFEST = __BUILD_MANIFEST_JSON__;
-      const assetBundle = __EMBEDDED_ASSET_BUNDLE_JSON__;
+      const APP_CONFIG = {
+        name: "SpinOption",
+        version: "1.1.0",
+        defaultLanguage: "vi",
+        repository: { owner: "HappyBoi04092004", name: "SpinOption" }
+      };
+      const BUILD_MANIFEST = {
+        schemaVersion: 2,
+        app: { name: "SpinOption", version: "1.1.0" }
+      };
+      const assetBundle = { schemaVersion: 2, dependencies: {} };
       const $ = selector => document.querySelector(selector);
       const $$ = selector => Array.from(document.querySelectorAll(selector));
 
@@ -1615,7 +1654,7 @@
       const SHARE_FRAGMENT_KEY = 'candidates';
       const SHARE_SCHEMA_VERSION = 1;
       const state = {
-        language: 'vi', mode: 'pick', source: '', pickCount: 1, teamCount: 2, teamSize: 4, teamSplit: 'count', orderPresentation: 'one', excludeSelected: false,
+        language: 'vi', mode: 'pick', source: 'Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt\nSa Pa\nHạ Long\nPhú Quốc\nHội An\nNinh Bình\nMộc Châu', pickCount: 1, teamCount: 2, teamSize: 4, teamSplit: 'count', orderPresentation: 'one', excludeSelected: false,
         excluded: new Set(), history: [], result: null, wheelRotation: 0, isSpinning: false, wheelSpinToken: 0, savedLists: [], presentationOrderIndex: 0
       };
 
@@ -1672,7 +1711,11 @@
         saveTimer = setTimeout(saveState, 180);
       }
       function loadState() {
-        const raw = safeStorageGet(storageKey); if (!raw) return;
+        const raw = safeStorageGet(storageKey);
+        if (!raw) {
+          state.source = 'Ba Vì\nTam Đảo\nTà Xùa\nĐà Lạt\nSa Pa\nHạ Long\nPhú Quốc\nHội An\nNinh Bình\nMộc Châu';
+          return;
+        }
         try {
           const saved = JSON.parse(raw);
           if (typeof saved.source === 'string') state.source = saved.source.slice(0,500000);
@@ -1888,19 +1931,49 @@
         state.history = state.history.slice(0,50); saveState(); renderHistory();
       }
 
-      function runPick() {
+      async function runPick() {
         const available = availableCandidates();
-        const count = normalizeInt(state.pickCount,1,1000,1);
+        const count = normalizeInt(state.pickCount, 1, 1000, 1);
         if (available.length < count) { AppToast.show({message:t('notEnough'),tone:'warning'}); return; }
-        const selected = selectUnique(available,count);
+        
+        let selected = [];
+        if (window.SpinApi) {
+          const apiRes = await SpinApi.pick({
+            source: state.source,
+            count,
+            excluded: state.excludeSelected ? Array.from(state.excluded).map(id => {
+              const c = available.find(item => item.id === id);
+              return c ? c.label : '';
+            }).filter(Boolean) : []
+          });
+          if (apiRes && apiRes.success && apiRes.picked && apiRes.picked.length) {
+            selected = apiRes.picked.map((label, i) => {
+              const match = available.find(c => c.label === label);
+              return match || { id: 10000 + i, label };
+            });
+          }
+        }
+        if (!selected.length) {
+          selected = selectUnique(available, count);
+        }
+
         if (state.excludeSelected) selected.forEach(candidate => state.excluded.add(candidate.id));
         state.result = { type:'pick', values:selected.map(candidate => candidate.label), at:Date.now() };
         addHistory(selected,'pick'); saveState(); renderResult(); updateCandidateStats(); burstConfetti();
       }
-      function runOrder() {
+      async function runOrder() {
         const available = parseCandidates().candidates; if (!available.length) return;
-        const ordered = secureShuffle(available);
-        state.result = { type:'order', values:ordered.map(candidate => candidate.label), at:Date.now() };
+        let orderedLabels = [];
+        if (window.SpinApi) {
+          const apiRes = await SpinApi.order({ source: state.source });
+          if (apiRes && apiRes.success && apiRes.ordered) {
+            orderedLabels = apiRes.ordered;
+          }
+        }
+        if (!orderedLabels.length) {
+          orderedLabels = secureShuffle(available).map(c => c.label);
+        }
+        state.result = { type:'order', values:orderedLabels, at:Date.now() };
         renderResult(); burstConfetti(12);
       }
       function runTeams() {
@@ -1913,31 +1986,45 @@
         state.result = { type:'teams', teams, at:Date.now(), split:state.teamSplit, requested:state.teamSplit === 'size' ? state.teamSize : state.teamCount };
         renderResult(); burstConfetti(12);
       }
-      function runWheel() {
+      async function runWheel() {
         const available = parseCandidates().candidates;
         if (!available.length) return;
         if (parseCandidates().candidates.length > MAX_WHEEL) { AppToast.show({message:t('wheelLimit'),tone:'warning'}); return; }
-        const selected = available[secureRandomInt(available.length)];
-        const selectedIndex = available.findIndex(candidate => candidate.id === selected.id);
-        const segment = 360 / available.length;
-        const targetCenter = selectedIndex * segment + segment / 2;
-        const extraTurns = 9 + secureRandomInt(4);
-        const normalizedCurrent = ((state.wheelRotation % 360) + 360) % 360;
-        const targetNormalized = 360 - targetCenter;
-        const delta = ((targetNormalized - normalizedCurrent + 360) % 360) + extraTurns * 360;
+        
+        let winnerLabel = '';
+        let finalDelta = 0;
+        if (window.SpinApi) {
+          const apiRes = await SpinApi.wheel({ source: state.source, currentRotation: state.wheelRotation });
+          if (apiRes && apiRes.success && apiRes.winner) {
+            winnerLabel = apiRes.winner;
+            finalDelta = apiRes.delta || (apiRes.finalRotation - state.wheelRotation);
+          }
+        }
+        if (!winnerLabel) {
+          const selected = available[secureRandomInt(available.length)];
+          winnerLabel = selected.label;
+          const selectedIndex = available.findIndex(candidate => candidate.id === selected.id);
+          const segment = 360 / available.length;
+          const targetCenter = selectedIndex * segment + segment / 2;
+          const extraTurns = 9 + secureRandomInt(4);
+          const normalizedCurrent = ((state.wheelRotation % 360) + 360) % 360;
+          const targetNormalized = 360 - targetCenter;
+          finalDelta = ((targetNormalized - normalizedCurrent + 360) % 360) + extraTurns * 360;
+        }
+
         const startRotation = state.wheelRotation;
         const spinToken = ++state.wheelSpinToken;
-        state.wheelRotation = startRotation + delta;
+        state.wheelRotation = startRotation + finalDelta;
         state.isSpinning = true;
-        renderResult({ wheelCandidates:available, wheelPending:selected.label, wheelStartRotation:startRotation }); updateCandidateStats();
-        if ($('#presentationDialog').open) renderPresentationWheel(available,{ wheelPending:selected.label, wheelStartRotation:startRotation });
-        const canvases = $$('.wheel-canvas'); if (canvases.length) { requestAnimationFrame(() => requestAnimationFrame(() => { canvases.forEach(canvas => { canvas.classList.add('spinning'); canvas.style.setProperty('--wheel-rotation',`${state.wheelRotation}deg`); }); })); }
+        renderResult({ wheelCandidates:available, wheelPending:winnerLabel, wheelStartRotation:startRotation }); updateCandidateStats();
+        if ($('#presentationDialog').open) renderPresentationWheel(available,{ wheelPending:winnerLabel, wheelStartRotation:startRotation });
+        const canvases = $('.wheel-canvas'); if (canvases.length) { requestAnimationFrame(() => requestAnimationFrame(() => { canvases.forEach(canvas => { canvas.classList.add('spinning'); canvas.style.setProperty('--wheel-rotation',`${state.wheelRotation}deg`); }); })); }
         const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
         setTimeout(() => {
           if (spinToken !== state.wheelSpinToken) return;
           state.isSpinning = false;
-          state.result = { type:'wheel', values:[selected.label], at:Date.now(), wheelRotation:state.wheelRotation };
-          addHistory([selected],'wheel'); saveState(); renderResult(); updateCandidateStats(); if ($('#presentationDialog').open) renderPresentationResult(); burstConfetti();
+          state.result = { type:'wheel', values:[winnerLabel], at:Date.now(), wheelRotation:state.wheelRotation };
+          addHistory([{ id: 0, label: winnerLabel }],'wheel'); saveState(); renderResult(); updateCandidateStats(); if ($('#presentationDialog').open) renderPresentationResult(); burstConfetti();
         }, reduced ? 30 : 5850);
       }
       function scrollToResultOnMobile() {
@@ -2856,7 +2943,7 @@
         ctx.arc(center, center, 14, 0, Math.PI * 2);
         ctx.fillStyle = '#ffffff';
         ctx.fill();
-        ctx.strokeStyle = '# dadbd6';
+        ctx.strokeStyle = '#dadbd6';
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -2873,7 +2960,7 @@
         ctx.stroke();
       }
 
-      function runSingleBoard(boardId) {
+      async function runSingleBoard(boardId, presetResult) {
         const board = multiBoardState.boards[boardId - 1];
         if (!board || board.isSpinning) return;
         const items = parseBoardCandidates(board.source);
@@ -2882,15 +2969,34 @@
         if (board.mode === 'wheel') {
           board.isSpinning = true;
           updateMultiBoardStats(boardId);
-          const winnerIndex = secureRandomInt(items.length);
-          const winner = items[winnerIndex];
-          const count = items.length;
-          const sliceAngle = (Math.PI * 2) / count;
-          // Target angle to line up winner at pointer (0 rad = 3 o'clock)
-          const targetSliceAngle = (Math.PI * 2) - (winnerIndex * sliceAngle + sliceAngle / 2);
-          const currentNorm = board.wheelRotation % (Math.PI * 2);
-          const fullSpins = (5 + secureRandomInt(3)) * Math.PI * 2;
-          const finalRotation = board.wheelRotation + fullSpins + ((targetSliceAngle - currentNorm + Math.PI * 4) % (Math.PI * 2));
+
+          let winner = '';
+          let winnerIndex = 0;
+          let finalRotation = 0;
+
+          if (presetResult && presetResult.winner) {
+            winner = presetResult.winner;
+            winnerIndex = presetResult.winnerIndex || 0;
+            finalRotation = presetResult.finalRotation || (board.wheelRotation + 2160);
+          } else if (window.SpinApi) {
+            const res = await SpinApi.wheel({ source: board.source, currentRotation: board.wheelRotation });
+            if (res && res.success && res.winner) {
+              winner = res.winner;
+              winnerIndex = res.winnerIndex;
+              finalRotation = res.finalRotation;
+            }
+          }
+
+          if (!winner) {
+            winnerIndex = secureRandomInt(items.length);
+            winner = items[winnerIndex];
+            const count = items.length;
+            const sliceAngle = (Math.PI * 2) / count;
+            const targetSliceAngle = (Math.PI * 2) - (winnerIndex * sliceAngle + sliceAngle / 2);
+            const currentNorm = board.wheelRotation % (Math.PI * 2);
+            const fullSpins = (5 + secureRandomInt(3)) * Math.PI * 2;
+            finalRotation = board.wheelRotation + fullSpins + ((targetSliceAngle - currentNorm + Math.PI * 4) % (Math.PI * 2));
+          }
 
           const startTime = performance.now();
           const duration = 2800 + secureRandomInt(600);
@@ -2899,7 +3005,6 @@
           function animate(now) {
             const elapsed = now - startTime;
             const progress = Math.min(1, elapsed / duration);
-            // Ease out cubic
             const ease = 1 - Math.pow(1 - progress, 3);
             board.wheelRotation = startRotation + (finalRotation - startRotation) * ease;
             drawBoardWheel(boardId);
@@ -2921,7 +3026,15 @@
           }
           requestAnimationFrame(animate);
         } else if (board.mode === 'order') {
-          const ordered = secureShuffle(items);
+          let ordered = null;
+          if (presetResult && presetResult.ordered) {
+            ordered = presetResult.ordered;
+          } else if (window.SpinApi) {
+            const res = await SpinApi.order({ source: board.source });
+            if (res && res.success && res.ordered) ordered = res.ordered;
+          }
+          if (!ordered) ordered = secureShuffle(items);
+
           board.result = ordered;
           renderBoardStage(boardId);
           renderCombinedResult();
@@ -2929,14 +3042,21 @@
           burstConfetti();
         } else {
           // Pick
-          const count = Math.min(items.length, Math.max(1, board.pickCount || 1));
-          let picked;
-          if (count === 1) {
-            picked = items[secureRandomInt(items.length)];
-          } else {
+          let picked = null;
+          if (presetResult && presetResult.result) {
+            picked = presetResult.result;
+          } else if (window.SpinApi) {
+            const res = await SpinApi.pick({ source: board.source, count: board.pickCount || 1 });
+            if (res && res.success && res.picked) {
+              picked = Array.isArray(res.picked) ? res.picked.join(' · ') : res.picked;
+            }
+          }
+          if (!picked) {
+            const count = Math.min(items.length, Math.max(1, board.pickCount || 1));
             const selected = selectUnique(items.map((it, idx) => ({ id: idx, label: it })), count);
             picked = selected.map(s => s.label).join(' · ');
           }
+
           board.result = picked;
           renderBoardStage(boardId);
           renderCombinedResult();
@@ -2944,24 +3064,30 @@
           burstConfetti();
         }
       }
+      async function runAllBoards() {
+        const activeBoards = multiBoardState.boards.slice(0, multiBoardState.count);
+        const eligible = activeBoards.filter(b => parseBoardCandidates(b.source).length > 0 && !b.isSpinning);
+        if (!eligible.length) return;
 
-      function runAllBoards() {
-        let maxDuration = 0;
-        const results = [];
-        for (let i = 1; i <= multiBoardState.count; i++) {
-          runSingleBoard(i);
-          const b = multiBoardState.boards[i - 1];
-          if (b.mode === 'wheel') maxDuration = Math.max(maxDuration, 3500);
+        let apiResults = null;
+        if (window.SpinApi) {
+          const res = await SpinApi.multiRun({
+            boards: eligible.map(b => ({
+              id: b.id,
+              title: b.title,
+              mode: b.mode,
+              source: b.source,
+              pickCount: b.pickCount || 1,
+              wheelRotation: b.wheelRotation || 0
+            }))
+          });
+          if (res && res.success) apiResults = res.results;
         }
-        if (maxDuration > 0) {
-          setTimeout(() => {
-            const currentResults = multiBoardState.boards.slice(0, multiBoardState.count).map(b => ({ title: b.title, value: b.result }));
-            addMultiBoardHistory(currentResults);
-          }, maxDuration + 100);
-        } else {
-          const currentResults = multiBoardState.boards.slice(0, multiBoardState.count).map(b => ({ title: b.title, value: b.result }));
-          addMultiBoardHistory(currentResults);
-        }
+
+        eligible.forEach(board => {
+          const serverPreset = apiResults ? apiResults.find(r => r.id === board.id) : null;
+          runSingleBoard(board.id, serverPreset);
+        });
       }
 
       function setupEvents() {
@@ -3030,11 +3156,29 @@
         }
         $('#candidateInput').value = state.source; $('#pickCount').value = state.pickCount; $('#teamCount').value = state.teamCount; $('#teamSize').value = state.teamSize; $('#excludeToggle').checked = state.excludeSelected;
         $('#versionBadge').textContent = `v${APP_CONFIG.version}`; $('#buildVersion').textContent = APP_CONFIG.version; $('#builtAt').textContent = BUILD_MANIFEST.generatedAtUtc ? new Date(BUILD_MANIFEST.generatedAtUtc).toLocaleDateString() : '—';
-        setupEvents(); setLanguage(state.language); updateModeUI(); renderResult(); renderHistory();
+        setupEvents(); setLanguage(state.language); updateCandidateStats(); updateModeUI(); renderResult(); renderHistory();
         if (shared?.error) AppToast.show({message:t('candidateShareInvalid'),tone:'warning'});
         else if (shared) AppToast.show({message:t('candidateShareLoaded',{count:shared.count}),actionLabel: previousSource !== shared.source ? t('undo') : '',onAction: previousSource !== shared.source ? () => setSource(previousSource) : null,tone:'success'});
       }
       init();
+
+        // Check API health and update badge
+        if (window.SpinApi) {
+          SpinApi.checkHealth().then(data => {
+            const dot = $('#apiStatusDot');
+            const txt = $('#apiStatusText');
+            if (dot && txt) {
+              if (data && data.status === 'ok') {
+                dot.className = 'status-dot online';
+                txt.textContent = 'BE Online';
+              } else {
+                dot.className = 'status-dot offline';
+                txt.textContent = 'Client Fallback';
+              }
+            }
+          });
+        }
+
     })();
   </script>
 </body>
