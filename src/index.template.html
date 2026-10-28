@@ -33,6 +33,117 @@
       --header-height: 66px;
     }
 
+    
+    .board-select-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .board-count-select {
+      appearance: none;
+      -webkit-appearance: none;
+      background: var(--surface-warm) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2316624f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center;
+      border: 1.5px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 38px 9px 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      box-shadow: 0 1px 2px rgba(0,0,0,.04);
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .board-count-select:hover {
+      border-color: var(--accent);
+    }
+    .board-count-select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    .board-selector-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .combined-result-card {
+      background: var(--surface);
+      border: 2px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-sm);
+      animation: fadeIn .3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .combined-result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 14px;
+    }
+    .combined-result-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 16px;
+      color: var(--accent);
+    }
+    .combined-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--accent);
+      fill: var(--accent-soft);
+    }
+    .combined-result-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .combined-item {
+      background: var(--surface-warm);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all .2s ease;
+    }
+    .combined-item.has-result {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .combined-item-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    .combined-item-value {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .combined-item.has-result .combined-item-value {
+      color: var(--accent);
+    }
+    .combined-item.pending .combined-item-value {
+      color: var(--muted);
+      font-style: italic;
+      font-weight: normal;
+      font-size: 14px;
+    }
+
     /* Multi-board selector and grid styles */
     .board-selector-bar {
       display: flex;
@@ -223,6 +334,123 @@
       outline: none;
       background: #fff;
     }
+    
+    .board-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+    .board-card-clean-dropdown {
+      position: relative;
+    }
+    .board-card-btn-clean {
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background .15s ease;
+    }
+    .board-card-btn-clean:hover {
+      background: var(--surface-muted);
+    }
+    .board-card-clean-menu {
+      position: absolute;
+      bottom: calc(100% + 4px);
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+      min-width: 175px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      padding: 5px;
+      animation: fadeIn .15s ease;
+    }
+    .board-clean-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      font-size: 12.5px;
+      font-weight: 500;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      box-sizing: border-box;
+      transition: background .15s ease;
+    }
+    .board-clean-item:hover {
+      background: var(--surface-hover);
+    }
+    .board-clean-item svg {
+      flex-shrink: 0;
+      color: var(--muted);
+    }
+    .board-clean-item.danger {
+      color: var(--danger);
+    }
+    .board-clean-item.danger svg {
+      color: var(--danger);
+    }
+    .board-clean-item.danger:hover {
+      background: #fde8e8;
+    }
+    .board-clean-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 4px 0;
+    }
+    .board-card-settings {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px;
+      background: var(--surface-warm);
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      font-size: 12.5px;
+      font-weight: 600;
+    }
+    .board-card-pick-count-control {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .board-card-pick-count-btn {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .board-card-pick-count-val {
+      min-width: 20px;
+      text-align: center;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
     .board-card-bar {
       display: flex;
       align-items: center;
@@ -781,19 +1009,42 @@
         </svg>
         <span class="board-selector-title">Số lượng bảng random:</span>
       </div>
-      <div class="segmented-control board-count-control" id="boardCountControl" role="group" aria-label="Số bảng random">
-        <button class="segmented-button" type="button" data-board-count="1" aria-pressed="true">1 bảng</button>
-        <button class="segmented-button" type="button" data-board-count="2" aria-pressed="false">2 bảng</button>
-        <button class="segmented-button" type="button" data-board-count="3" aria-pressed="false">3 bảng</button>
-        <button class="segmented-button" type="button" data-board-count="4" aria-pressed="false">4 bảng</button>
-        <button class="segmented-button" type="button" data-board-count="5" aria-pressed="false">5 bảng</button>
+      <div class="board-selector-right">
+        <div class="board-select-wrapper" id="boardCountControl">
+          <select class="board-count-select" id="boardCountSelect" aria-label="Số lượng bảng random">
+            <option value="1">1 bảng (Mặc định)</option>
+            <option value="2">2 bảng ngẫu nhiên</option>
+            <option value="3">3 bảng ngẫu nhiên</option>
+            <option value="4">4 bảng ngẫu nhiên</option>
+            <option value="5">5 bảng ngẫu nhiên</option>
+          </select>
+        </div>
+        <button class="button primary run-all-boards-btn" id="runAllBoardsButton" type="button" hidden>
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span>Quay / Bốc thăm tất cả</span>
+        </button>
       </div>
-      <button class="button primary run-all-boards-btn" id="runAllBoardsButton" type="button" hidden>
-        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <polygon points="5 3 19 12 5 21 5 3"/>
-        </svg>
-        <span>Quay / Bốc thăm tất cả</span>
-      </button>
+    </div>
+
+    <!-- Combined Result Card for 2-5 boards -->
+    <div class="combined-result-card" id="combinedResultCard" hidden>
+      <div class="combined-result-header">
+        <div class="combined-result-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="combined-icon" aria-hidden="true">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <strong>Kết quả tổng hợp các bảng</strong>
+        </div>
+        <div class="combined-result-actions">
+          <button class="button ghost" id="copyCombinedResultBtn" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5H5v11h3"/></svg>
+            <span>Sao chép kết quả</span>
+          </button>
+        </div>
+      </div>
+      <div class="combined-result-grid" id="combinedResultGrid"></div>
     </div>
 
     <div class="multi-board-grid" id="multiBoardContainer" hidden></div>
@@ -1913,6 +2164,52 @@
       }
 
 
+      
+      function cleanBoardSource(boardId, type) {
+        const board = multiBoardState.boards[boardId - 1];
+        if (!board) return;
+        const before = board.source;
+        let lines = before.replace(/\r\n?/g, '\n').split('\n');
+        if (type === 'trim') lines = lines.map(line => line.trim());
+        if (type === 'blank') lines = lines.filter(line => line.trim());
+        if (type === 'duplicates') {
+          const seen = new Set();
+          lines = lines.filter(line => {
+            const key = line.trim();
+            if (!key) return true;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+        }
+        if (type === 'clear') {
+          lines = [];
+        }
+        const after = lines.join('\n');
+        if (after === before && type !== 'clear') return;
+        board.source = after;
+        if (board.id === 1) state.source = after;
+        const textarea = $(`#boardTextarea-${boardId}`);
+        if (textarea) textarea.value = board.source;
+        updateMultiBoardStats(boardId);
+        if (board.mode === 'wheel') drawBoardWheel(boardId);
+        renderCombinedResult();
+        AppToast.show({
+          message: type === 'clear' ? 'Đã xóa tất cả lựa chọn' : type === 'duplicates' ? t('duplicatesRemoved') : t('cleaned'),
+          actionLabel: t('undo'),
+          onAction: () => {
+            board.source = before;
+            if (board.id === 1) state.source = before;
+            if (textarea) textarea.value = before;
+            updateMultiBoardStats(boardId);
+            if (board.mode === 'wheel') drawBoardWheel(boardId);
+            renderCombinedResult();
+            AppToast.show({ message: t('undone'), tone: 'success' });
+          },
+          tone: 'success'
+        });
+      }
+
       // --- Multi-Board Manager (1 to 5 boards) ---
       const DEFAULT_BOARD_PRESETS = [
         {
@@ -1944,17 +2241,84 @@
           title: DEFAULT_BOARD_PRESETS[idx].title,
           source: DEFAULT_BOARD_PRESETS[idx].source,
           mode: 'wheel',
+          pickCount: 1,
           result: null,
           isSpinning: false,
           wheelRotation: 0
         }))
       };
 
+      function renderCombinedResult() {
+        const card = $('#combinedResultCard');
+        const grid = $('#combinedResultGrid');
+        if (!card || !grid) return;
+
+        if (multiBoardState.count <= 1) {
+          card.hidden = true;
+          return;
+        }
+
+        card.hidden = false;
+        grid.innerHTML = '';
+
+        for (let i = 0; i < multiBoardState.count; i++) {
+          const board = multiBoardState.boards[i];
+          const item = document.createElement('div');
+          const hasVal = Boolean(board.result && (typeof board.result === 'string' || Array.isArray(board.result)));
+          item.className = `combined-item ${hasVal ? 'has-result' : 'pending'}`;
+
+          const label = document.createElement('span');
+          label.className = 'combined-item-label';
+          label.textContent = board.title || `Bảng ${board.id}`;
+
+          const val = document.createElement('strong');
+          val.className = 'combined-item-value';
+          if (hasVal) {
+            val.textContent = Array.isArray(board.result) ? board.result.join(' → ') : board.result;
+          } else {
+            val.textContent = 'Chưa quay';
+          }
+
+          item.append(label, val);
+          grid.appendChild(item);
+        }
+      }
+
+      function addMultiBoardHistory(items) {
+        if (!items || !items.length) return;
+        const validItems = items.filter(it => it.value);
+        if (!validItems.length) return;
+        const values = validItems.map(it => `${it.title}: ${Array.isArray(it.value) ? it.value.join(' → ') : it.value}`);
+        state.history.unshift({ time: Date.now(), values, mode: 'multi' });
+        state.history = state.history.slice(0, 50);
+        saveState();
+        renderHistory();
+      }
+
+      function copyCombinedResults() {
+        const activeBoards = multiBoardState.boards.slice(0, multiBoardState.count);
+        const lines = ['🎯 KẾT QUẢ RANDOM TỔNG HỢP:'];
+        let hasAny = false;
+        activeBoards.forEach(b => {
+          if (b.result) {
+            hasAny = true;
+            const res = Array.isArray(b.result) ? b.result.join(' → ') : b.result;
+            lines.push(`• ${b.title}: ${res}`);
+          }
+        });
+        if (!hasAny) {
+          AppToast.show({ message: 'Chưa có kết quả nào để sao chép', tone: 'warning' });
+          return;
+        }
+        copyText(lines.join('\n')).then(ok => {
+          AppToast.show({ message: ok ? 'Đã sao chép kết quả tổng hợp' : 'Sao chép thất bại', tone: ok ? 'success' : 'warning' });
+        });
+      }
+
       function updateBoardCount(newCount) {
         multiBoardState.count = normalizeInt(newCount, 1, 5, 1);
-        $$('#boardCountControl .segmented-button').forEach(btn => {
-          btn.setAttribute('aria-pressed', String(Number(btn.dataset.boardCount) === multiBoardState.count));
-        });
+        const selectEl = $('#boardCountSelect');
+        if (selectEl) selectEl.value = String(multiBoardState.count);
 
         const singleGrid = $('.workspace-grid');
         const multiContainer = $('#multiBoardContainer');
@@ -1964,7 +2328,8 @@
           if (singleGrid) singleGrid.hidden = false;
           if (multiContainer) multiContainer.hidden = true;
           if (runAllBtn) runAllBtn.hidden = true;
-          // Synchronize board 1 state with primary state
+          const combinedCard = $('#combinedResultCard');
+          if (combinedCard) combinedCard.hidden = true;
           if (multiBoardState.boards[0].source && state.source !== multiBoardState.boards[0].source) {
             setSource(multiBoardState.boards[0].source, { reset: false });
           }
@@ -1972,11 +2337,11 @@
           if (singleGrid) singleGrid.hidden = true;
           if (multiContainer) multiContainer.hidden = false;
           if (runAllBtn) runAllBtn.hidden = false;
-          // Keep board 1 source synced from current input if user edited it
           if (state.source) {
             multiBoardState.boards[0].source = state.source;
           }
           renderMultiBoards();
+          renderCombinedResult();
         }
       }
 
@@ -2036,6 +2401,7 @@
           textWrap.className = 'board-textarea-wrap';
           const textarea = document.createElement('textarea');
           textarea.className = 'board-card-textarea';
+          textarea.id = `boardTextarea-${board.id}`;
           textarea.spellcheck = false;
           textarea.value = board.source;
           textarea.placeholder = 'Mỗi dòng một lựa chọn...';
@@ -2046,17 +2412,21 @@
             if (board.mode === 'wheel') drawBoardWheel(board.id);
           });
 
-          // Bar with stats and Sample button
+          // Bar with stats, Sample button, and Clean/Organize dropdown
           const bar = document.createElement('div');
           bar.className = 'board-card-bar';
           const stats = document.createElement('span');
           stats.className = 'board-card-stats';
           stats.id = `boardStats-${board.id}`;
 
+          const actionsWrap = document.createElement('div');
+          actionsWrap.className = 'board-card-actions';
+
           const sampleBtn = document.createElement('button');
           sampleBtn.type = 'button';
           sampleBtn.className = 'board-card-btn-sample';
           sampleBtn.textContent = 'Mẫu';
+          sampleBtn.title = 'Nạp danh sách mẫu';
           sampleBtn.addEventListener('click', () => {
             const preset = DEFAULT_BOARD_PRESETS[board.id - 1] || DEFAULT_BOARD_PRESETS[0];
             board.source = preset.source;
@@ -2065,8 +2435,101 @@
             updateMultiBoardStats(board.id);
             if (board.mode === 'wheel') drawBoardWheel(board.id);
           });
-          bar.append(stats, sampleBtn);
+
+          // Sắp xếp (Clean) Dropdown
+          const cleanDropdown = document.createElement('div');
+          cleanDropdown.className = 'board-card-clean-dropdown';
+
+          const cleanBtn = document.createElement('button');
+          cleanBtn.type = 'button';
+          cleanBtn.className = 'board-card-btn-clean';
+          cleanBtn.innerHTML = '<span>Sắp xếp</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12"><path d="m6 9 6 6 6-6"/></svg>';
+          cleanBtn.title = 'Xóa khoảng trắng, dòng trống, trùng lặp...';
+
+          const cleanMenu = document.createElement('div');
+          cleanMenu.className = 'board-card-clean-menu';
+          cleanMenu.hidden = true;
+
+          const cleanOptions = [
+            { type: 'trim', label: 'Xóa khoảng trắng thừa', icon: '<path d="M5 7h14M8 12h8M10 17h4"/>' },
+            { type: 'blank', label: 'Xóa dòng trống', icon: '<path d="M5 7h14M5 17h14"/><path d="M8 12h8" stroke-dasharray="2 2"/>' },
+            { type: 'duplicates', label: 'Xóa trùng lặp', icon: '<rect x="5" y="5" width="10" height="10" rx="2"/><path d="M9 9h10v10H9"/>' }
+          ];
+
+          cleanOptions.forEach(opt => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'board-clean-item';
+            item.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14">${opt.icon}</svg> <span>${opt.label}</span>`;
+            item.addEventListener('click', () => {
+              cleanMenu.hidden = true;
+              cleanBoardSource(board.id, opt.type);
+            });
+            cleanMenu.appendChild(item);
+          });
+
+          const divider = document.createElement('div');
+          divider.className = 'board-clean-divider';
+          const clearItem = document.createElement('button');
+          clearItem.type = 'button';
+          clearItem.className = 'board-clean-item danger';
+          clearItem.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="14" height="14"><path d="M4 7h16M9 7V4h6v3M8 7l1 13h6l1-13"/></svg> <span>Xóa tất cả</span>';
+          clearItem.addEventListener('click', () => {
+            cleanMenu.hidden = true;
+            cleanBoardSource(board.id, 'clear');
+          });
+          cleanMenu.append(divider, clearItem);
+
+          cleanBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            // Close other open clean menus
+            document.querySelectorAll('.board-card-clean-menu').forEach(m => {
+              if (m !== cleanMenu) m.hidden = true;
+            });
+            cleanMenu.hidden = !cleanMenu.hidden;
+          });
+
+          document.addEventListener('click', () => {
+            cleanMenu.hidden = true;
+          });
+
+          cleanDropdown.append(cleanBtn, cleanMenu);
+          actionsWrap.append(sampleBtn, cleanDropdown);
+          bar.append(stats, actionsWrap);
           textWrap.append(textarea, bar);
+
+          // Optional Pick Settings row when in pick mode
+          const pickSettingsRow = document.createElement('div');
+          pickSettingsRow.className = 'board-card-settings';
+          pickSettingsRow.id = `boardPickSettings-${board.id}`;
+          pickSettingsRow.hidden = board.mode !== 'pick';
+          pickSettingsRow.innerHTML = `<span>Số lượng cần chọn:</span>`;
+          const countControl = document.createElement('div');
+          countControl.className = 'board-card-pick-count-control';
+          const minusBtn = document.createElement('button');
+          minusBtn.type = 'button';
+          minusBtn.className = 'board-card-pick-count-btn';
+          minusBtn.textContent = '−';
+          const countVal = document.createElement('span');
+          countVal.className = 'board-card-pick-count-val';
+          countVal.textContent = String(board.pickCount || 1);
+          const plusBtn = document.createElement('button');
+          plusBtn.type = 'button';
+          plusBtn.className = 'board-card-pick-count-btn';
+          plusBtn.textContent = '＋';
+
+          minusBtn.addEventListener('click', () => {
+            board.pickCount = Math.max(1, (board.pickCount || 1) - 1);
+            countVal.textContent = String(board.pickCount);
+          });
+          plusBtn.addEventListener('click', () => {
+            const count = parseBoardCandidates(board.source).length;
+            board.pickCount = Math.min(Math.max(1, count), (board.pickCount || 1) + 1);
+            countVal.textContent = String(board.pickCount);
+          });
+          countControl.append(minusBtn, countVal, plusBtn);
+          pickSettingsRow.appendChild(countControl);
+          textWrap.appendChild(pickSettingsRow);
 
           // Action button
           const actionBtn = document.createElement('button');
@@ -2122,6 +2585,8 @@
         card.querySelectorAll('.board-card-mode-btn').forEach(btn => {
           btn.setAttribute('aria-selected', String(btn.textContent.includes(board.mode === 'wheel' ? 'Quay' : board.mode === 'pick' ? 'Bốc' : 'Thứ')));
         });
+        const pickRow = $(`#boardPickSettings-${boardId}`);
+        if (pickRow) pickRow.hidden = board.mode !== 'pick';
         const actionBtn = $(`#boardActionBtn-${boardId}`);
         if (actionBtn) actionBtn.innerHTML = getBoardActionLabel(board);
         renderBoardStage(boardId);
@@ -2301,6 +2766,8 @@
               const winnerEl = $(`#boardWinner-${boardId}`);
               if (winnerEl) winnerEl.textContent = winner;
               updateMultiBoardStats(boardId);
+              renderCombinedResult();
+              addMultiBoardHistory([{ title: board.title, value: winner }]);
               burstConfetti();
             }
           }
@@ -2309,19 +2776,43 @@
           const ordered = secureShuffle(items);
           board.result = ordered;
           renderBoardStage(boardId);
+          renderCombinedResult();
+          addMultiBoardHistory([{ title: board.title, value: ordered }]);
           burstConfetti();
         } else {
           // Pick
-          const picked = items[secureRandomInt(items.length)];
+          const count = Math.min(items.length, Math.max(1, board.pickCount || 1));
+          let picked;
+          if (count === 1) {
+            picked = items[secureRandomInt(items.length)];
+          } else {
+            const selected = selectUnique(items.map((it, idx) => ({ id: idx, label: it })), count);
+            picked = selected.map(s => s.label).join(' · ');
+          }
           board.result = picked;
           renderBoardStage(boardId);
+          renderCombinedResult();
+          addMultiBoardHistory([{ title: board.title, value: picked }]);
           burstConfetti();
         }
       }
 
       function runAllBoards() {
+        let maxDuration = 0;
+        const results = [];
         for (let i = 1; i <= multiBoardState.count; i++) {
           runSingleBoard(i);
+          const b = multiBoardState.boards[i - 1];
+          if (b.mode === 'wheel') maxDuration = Math.max(maxDuration, 3500);
+        }
+        if (maxDuration > 0) {
+          setTimeout(() => {
+            const currentResults = multiBoardState.boards.slice(0, multiBoardState.count).map(b => ({ title: b.title, value: b.result }));
+            addMultiBoardHistory(currentResults);
+          }, maxDuration + 100);
+        } else {
+          const currentResults = multiBoardState.boards.slice(0, multiBoardState.count).map(b => ({ title: b.title, value: b.result }));
+          addMultiBoardHistory(currentResults);
         }
       }
 
@@ -2330,11 +2821,11 @@
         $('#candidateInput').addEventListener('paste', event => { const text=event.clipboardData?.getData('text/plain') || ''; if(!text.includes('\t')) return; const input=event.currentTarget; if(openExcelPaste(text,input.selectionStart,input.selectionEnd)) event.preventDefault(); });
         $('#candidateInput').addEventListener('blur', saveState);
 
-        $('#boardCountControl')?.addEventListener?.('click', event => {
-          const btn = event.target?.closest?.('[data-board-count]');
-          if (btn) updateBoardCount(Number(btn.dataset.boardCount));
+        $('#boardCountSelect')?.addEventListener?.('change', event => {
+          updateBoardCount(Number(event.target.value));
         });
         $('#runAllBoardsButton')?.addEventListener?.('click', runAllBoards);
+        $('#copyCombinedResultBtn')?.addEventListener?.('click', copyCombinedResults);
         $('#languageButton').addEventListener('click', () => setLanguage(state.language === 'vi' ? 'en' : 'vi'));
         $$('.mode-button').forEach(button => button.addEventListener('click', () => { state.mode = button.dataset.mode; state.result = null; state.isSpinning = false; state.wheelSpinToken += 1; saveState(); updateModeUI(); renderResult(); }));
         $('#pickCount').addEventListener('change', event => { state.pickCount = normalizeInt(event.target.value,1,1000,1); event.target.value = state.pickCount; saveState(); });
